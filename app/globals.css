@@ -1,0 +1,395 @@
+/* 디자인 토큰 — mfg-systems-ui와 동일한 컬러 체계 사용 */
+:root {
+  --color-primary: #1f4e79;
+  --color-secondary: #2e75b6;
+  --color-bg: #ffffff;
+  --color-bg-muted: #f5f7fa;
+  --color-text: #333333;
+  --color-text-sub: #555555;
+  --color-border: #e2e8f0;
+  --color-success: #2e7d32;
+  --color-warning: #c9a227;
+  --color-danger: #c00000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Pretendard, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.hero h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.hero p {
+  margin-top: 8px;
+  color: var(--color-text-sub);
+}
+
+.banner {
+  margin: 24px 0;
+  padding: 16px 20px;
+  background: var(--color-bg);
+  border-left: 4px solid var(--color-secondary);
+  border-radius: 6px;
+}
+
+section {
+  margin-top: 40px;
+}
+
+section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* 비교 표 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--color-bg-muted);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td.dim {
+  color: var(--color-text-sub);
+}
+
+/* 장단점 2단 그리드 */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.pros h3 {
+  color: var(--color-success);
+}
+
+.cons h3 {
+  color: var(--color-danger);
+}
+
+.pros h3,
+.cons h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+ul {
+  padding-left: 18px;
+}
+
+li {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.decision {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.badge-vite {
+  background: rgba(46, 117, 182, 0.12);
+  color: var(--color-secondary);
+}
+
+.badge-next {
+  background: rgba(31, 78, 121, 0.12);
+  color: var(--color-primary);
+}
+
+.conclusion {
+  margin-top: 40px;
+  padding: 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 8px;
+}
+
+.conclusion h2 {
+  color: #fff;
+  border: none;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .grid2,
+  .decision,
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 상단 네비게이션 ─────────────────────────────── */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+.topnav-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.brand {
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.topnav-links {
+  display: flex;
+  gap: 4px;
+}
+.topnav-links a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.topnav-links a:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-primary);
+}
+
+/* ── 홈 데모 링크 카드 ───────────────────────────── */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.demo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.demo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(31, 78, 121, 0.12);
+  border-color: var(--color-primary);
+}
+.demo-card b {
+  font-size: 15px;
+  color: var(--color-primary);
+}
+.demo-card small {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+/* ── 데모 페이지 헤더 ────────────────────────────── */
+.back {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+.back:hover {
+  text-decoration: underline;
+}
+.mode-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 6px 0;
+}
+.mode-head p {
+  color: var(--color-text-sub);
+  max-width: 720px;
+}
+.mode-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(31, 78, 121, 0.1);
+  color: var(--color-primary);
+}
+.hint {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(201, 162, 39, 0.1);
+  border-left: 3px solid var(--color-warning);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* ── 타임스탬프 스탬프 ───────────────────────────── */
+.stamp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.stamp {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  min-width: 240px;
+}
+.stamp-muted {
+  border-color: var(--color-border);
+}
+.stamp-label {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+.stamp-value {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.stamp-muted .stamp-value {
+  color: var(--color-text);
+}
+
+/* ── 상태 배지 (재고 표) ─────────────────────────── */
+.st {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.st-ok {
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--color-success);
+}
+.st-warn {
+  background: rgba(201, 162, 39, 0.15);
+  color: var(--color-warning);
+}
+.st-bad {
+  background: rgba(192, 0, 0, 0.1);
+  color: var(--color-danger);
+}
+
+/* ── 코드 보기 ───────────────────────────────────── */
+.codeblock {
+  margin-top: 24px;
+}
+.code-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.code-toggle:hover {
+  background: var(--color-bg-muted);
+}
+.code-toggle-label {
+  font-family: monospace;
+}
+.chev {
+  transition: transform 0.2s;
+}
+.chev.open {
+  transform: rotate(180deg);
+}
+.code-pre {
+  margin-top: 10px;
+  padding: 16px 18px;
+  background: #0f2333;
+  color: #e6edf3;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.code-pre code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: pre;
+}

@@ -54,22 +54,31 @@ export function TimeStamp({
   );
 }`;
 
-// 서버리스 함수(Route Handler) — SSR/CSR이 호출하는 실제 API 엔드포인트.
+// 서버 측 데이터 소스 — API Route와 SSR 페이지가 공유한다.
+export const SNIPPET_INVENTORY = `// app/lib/inventory.ts — 서버 측 데이터 소스 (API Route + SSR 공유)
+import { ITEMS } from "./data";
+
+export function getInventory() {
+  return {
+    serverTime: new Date().toISOString(), // 호출(렌더) 시점의 서버 시각
+    generatedBy: "server data source (getInventory)",
+    items: ITEMS,
+  };
+}`;
+
+// 서버리스 함수(Route Handler) — CSR이 브라우저에서 호출하는 API 엔드포인트.
 export const SNIPPET_API_ROUTE = `// app/api/inventory/route.ts — "서버리스 함수"
 import { NextResponse } from "next/server";
-import { ITEMS } from "../../lib/data";
+import { getInventory } from "../../lib/inventory";
 
 export const dynamic = "force-dynamic"; // 호출 시각을 정확히 보여주려 항상 실행
 
 export async function GET() {
-  return NextResponse.json({
-    serverTime: new Date().toISOString(), // 이 함수가 실행된 서버 시각
-    generatedBy: "Route Handler (serverless function)",
-    items: ITEMS,
-  });
+  // 같은 데이터 소스를 JSON으로 반환 → CSR이 브라우저에서 fetch
+  return NextResponse.json(getInventory());
 }`;
 
-// 더미 재고 데이터 — SSG/ISR과 API Route가 공유한다.
+// 더미 재고 데이터 — SSG/ISR과 데이터 소스가 공유한다.
 export const SNIPPET_DATA = `// app/lib/data.ts — WMS 더미 재고 스냅샷
 import type { InvItem } from "../components/InventoryTable";
 
@@ -80,11 +89,3 @@ export const ITEMS: InvItem[] = [
   { sku: "FIN-3001", name: "완제품 도어트림", qty: 210, site: "아산", status: "정상" },
   { sku: "FIN-3002", name: "완제품 콘솔", qty: 0, site: "아산", status: "이상" },
 ];`;
-
-// SSR이 자기 API를 절대 URL로 호출하기 위한 베이스 URL 헬퍼.
-export const SNIPPET_BASE = `// app/lib/base.ts — 서버가 자기 API Route를 부를 때의 베이스 URL
-export function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  if (process.env.VERCEL_URL) return \`https://\${process.env.VERCEL_URL}\`;
-  return "http://localhost:3000";
-}`;

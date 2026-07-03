@@ -1,11 +1,11 @@
+import Link from "next/link";
 import { ModeHeader, TimeStamp } from "../components/ModeHeader";
-import { InventoryTable, type InvItem } from "../components/InventoryTable";
+import { InventoryTable } from "../components/InventoryTable";
 import { CodeExplorer, type CodeFile } from "../components/CodeExplorer";
-import { getBaseUrl } from "../lib/base";
-import { ITEMS } from "../lib/data";
+import { getInventory } from "../lib/inventory";
 import {
   SNIPPET_API_ROUTE,
-  SNIPPET_BASE,
+  SNIPPET_INVENTORY,
   SNIPPET_INVENTORY_TABLE,
   SNIPPET_TIMESTAMP,
 } from "../lib/snippets";
@@ -13,44 +13,44 @@ import {
 // SSR — 요청이 올 때마다 서버에서 렌더한다(정적 캐시 안 함).
 export const dynamic = "force-dynamic";
 
-type Api = { serverTime: string; items: InvItem[] };
-
-async function getData(): Promise<Api> {
-  // 서버리스 함수(/api/inventory)를 매 요청마다 호출 · 캐시 안 함.
-  // 단, Vercel 배포 보호 등으로 "자기 자신 API 호출"이 실패할 수 있어 폴백을 둔다.
-  try {
-    const res = await fetch(`${getBaseUrl()}/api/inventory`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`inventory API responded ${res.status}`);
-    return res.json();
-  } catch {
-    // 자기호출 실패 환경에서도 화면이 죽지 않도록 로컬 데이터로 렌더 (force-dynamic이라 시각은 매 요청 최신)
-    return { serverTime: new Date().toISOString(), items: ITEMS };
-  }
-}
+/*
+ * ⚠️ [Vercel 자기호출 교착으로 사용하지 않음 — 참고용으로 남겨둠]
+ *
+ * 처음엔 SSR에서 자기 자신의 API Route를 HTTP로 호출했다. 로컬에선 잘 되지만,
+ * Vercel에 배포하면 서버리스 함수가 '렌더 도중' 같은 배포의 API를 fetch할 때
+ * 인스턴스 동시성 제약으로 응답을 못 받아 hang → timeout → 500 에러가 났다.
+ * 그래서 아래 방식을 버리고, 데이터 소스(getInventory)를 직접 호출하도록 바꿨다.
+ *
+ * import { getBaseUrl } from "../lib/base";
+ *
+ * async function getData() {
+ *   const res = await fetch(`${getBaseUrl()}/api/inventory`, { cache: "no-store" });
+ *   return res.json();
+ * }
+ */
 
 const pageCode = `// app/ssr/page.tsx
-export const dynamic = "force-dynamic"; // ① 요청마다 서버에서 렌더(SSR)
+export const dynamic = "force-dynamic"; // 요청마다 서버에서 렌더(SSR)
+
+/* ⚠️ [Vercel 자기호출 교착으로 사용 안 함 — 참고용]
+   서버 렌더 도중 자기 API를 HTTP로 부르면 인스턴스 동시성 제약으로
+   hang → timeout → 500. 로컬에선 되지만 Vercel에선 실패한다.
 
 async function getData() {
-  try {
-    // ② 매 요청마다 서버리스 함수 호출 · 캐시 안 함 → 항상 최신
-    const res = await fetch(\`\${getBaseUrl()}/api/inventory\`, { cache: "no-store" });
-    if (!res.ok) throw new Error("api " + res.status);
-    return res.json();
-  } catch {
-    // ③ 자기호출이 막히는 환경(예: Vercel 배포 보호)에서도 안 죽도록 폴백
-    return { serverTime: new Date().toISOString(), items: ITEMS };
-  }
+  const res = await fetch(\`\${getBaseUrl()}/api/inventory\`, { cache: "no-store" });
+  return res.json();
 }
+*/
 
 export default async function Page() {
-  const data = await getData();                // 서버에서 데이터 확보
-  const renderTime = new Date().toISOString();  // 요청 시점의 렌더 시각
+  // ✅ 대신 데이터 소스를 서버에서 '직접' 호출 (HTTP 없음 → 교착 없음)
+  const data = getInventory();
+  const renderTime = new Date().toISOString(); // 요청 시점의 렌더 시각
 
   return (
     <main>
       {/* 서버가 채운 값을 그대로 HTML에 담아 응답 → 소스보기에도 데이터가 있음 */}
-      <TimeStamp label="API 서버 시각" value={data.serverTime} />
+      <TimeStamp label="서버 데이터 시각" value={data.serverTime} />
       <TimeStamp label="페이지 렌더 시각" value={renderTime} />
       <InventoryTable items={data.items} />
     </main>
@@ -58,26 +58,39 @@ export default async function Page() {
 }`;
 
 const FILES: CodeFile[] = [
-  { name: "app/ssr/page.tsx", desc: "SSR 데이터패칭 (이 화면)", code: pageCode },
-  { name: "app/api/inventory/route.ts", desc: "매 요청 호출되는 서버리스 함수", code: SNIPPET_API_ROUTE },
-  { name: "app/lib/base.ts", desc: "서버→자기 API 절대 URL", code: SNIPPET_BASE },
+  { name: "app/ssr/page.tsx", desc: "SSR 렌더 (이 화면)", code: pageCode },
+  { name: "app/lib/inventory.ts", desc: "서버가 직접 부르는 데이터 소스", code: SNIPPET_INVENTORY },
+  { name: "app/api/inventory/route.ts", desc: "같은 소스를 JSON으로 (CSR용)", code: SNIPPET_API_ROUTE },
   { name: "components/InventoryTable.tsx", desc: "데이터를 그리는 표", code: SNIPPET_INVENTORY_TABLE },
   { name: "components/TimeStamp.tsx", desc: "시각 스탬프 박스", code: SNIPPET_TIMESTAMP },
 ];
 
 export default async function Page() {
-  const data = await getData();
+  const data = getInventory();
   const renderTime = new Date().toISOString();
   return (
     <main className="container">
       <ModeHeader
         badge="SSR · 서버 렌더링"
         title="Server-Side Rendering"
-        desc={<>요청마다 서버가 API를 호출해 데이터를 채운 HTML을 완성합니다. <strong>항상 최신</strong>이지만 매 요청 서버 연산이 듭니다.</>}
-        hint="새로고침할 때마다 'API 서버 시각'과 '렌더 시각'이 매번 바뀝니다."
+        desc={<>요청마다 서버가 데이터를 조회해 값을 채운 HTML을 완성합니다. <strong>항상 최신</strong>이지만 매 요청 서버 연산이 듭니다.</>}
+        hint="새로고침할 때마다 '서버 데이터 시각'과 '렌더 시각'이 매번 바뀝니다."
       />
+
+      {/* 배포 노트 — Vercel 서버리스 자기호출 교착과 그 회피 설계를 명시 */}
+      <div className="mt-4 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
+        <span className="font-semibold text-brand-700">⚠️ 배포 노트 (Vercel) — </span>
+        서버리스 함수가 렌더 도중 <strong>자기 자신의 API를 HTTP로 호출</strong>하면 인스턴스 동시성
+        제약으로 응답을 못 받아 <strong>교착(hang → timeout)</strong>되어 500 에러가 납니다. 그래서 이
+        SSR 페이지는 HTTP 자기호출 대신{" "}
+        <code className="rounded bg-white px-1 py-0.5 font-mono text-[13px] text-brand-700">getInventory()</code>{" "}
+        데이터 소스를 <strong>서버에서 직접 호출</strong>합니다. (버려진 자기호출 코드는 코드뷰어에 주석으로
+        남겨 두었습니다.) 서버리스 함수 호출 시연은 브라우저에서 부르는{" "}
+        <Link href="/csr" className="font-semibold text-brand-600 underline">CSR</Link>이 담당합니다.
+      </div>
+
       <div className="stamp-row">
-        <TimeStamp label="API 서버 시각" value={data.serverTime} />
+        <TimeStamp label="서버 데이터 시각" value={data.serverTime} />
         <TimeStamp label="페이지 렌더 시각" value={renderTime} tone="muted" />
       </div>
       <section>

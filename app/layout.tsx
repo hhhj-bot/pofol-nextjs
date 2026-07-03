@@ -24,7 +24,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <nav className="topnav">
           <div className="topnav-inner">
-            <Link href="/" className="brand">▲ Next.js 렌더링 데모</Link>
+            <Link href="/" className="brand inline-flex items-center gap-2">
+              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-gradient text-[11px] font-black text-white shadow-soft">
+                ▲
+              </span>
+              Next.js 렌더링 데모
+            </Link>
             <div className="topnav-links">
               {NAV.map((n) => (
                 <Link key={n.href} href={n.href}>{n.label}</Link>

@@ -91,11 +91,17 @@ const GUIDE: Guide[] = [
 export default function Page() {
   return (
     <main className="container">
-      <header className="hero">
-        <h1>Vite vs Next.js — 어떤 기준으로 선택했는가</h1>
-        <p>
-          제조 시스템 UI 포트폴리오(ERP·MES·PLM·SCM)는 <strong>Vite + React(SPA)</strong>로
-          구현했습니다. 그 선택의 근거와, Next.js를 도입한다면 언제가 적절한지를 정리했습니다.
+      <header>
+        <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600 ring-1 ring-brand-100">
+          Frontend · Rendering Strategy
+        </span>
+        <h1 className="mt-4 bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent">
+          Vite vs Next.js — 어떤 기준으로 선택했는가
+        </h1>
+        <p className="mt-3 max-w-2xl text-slate-500">
+          제조 시스템 UI 포트폴리오(ERP·MES·PLM·SCM)는{" "}
+          <strong className="font-semibold text-slate-700">Vite + React(SPA)</strong>로 구현했습니다.
+          그 선택의 근거와, Next.js를 도입한다면 언제가 적절한지를 정리했습니다.
         </p>
       </header>
 
@@ -107,7 +113,7 @@ export default function Page() {
       {/* 0. 라이브 렌더링 데모 */}
       <section>
         <h2>0. 라이브 렌더링 데모 (SSR · SSG · ISR · CSR)</h2>
-        <p style={{ marginBottom: 16, color: "var(--color-text-sub)", fontSize: 14 }}>
+        <p className="mb-4 text-sm text-slate-500">
           같은 재고 API(<code>/api/inventory</code>, 서버리스 함수)를 4가지 방식으로 렌더링합니다.
           각 페이지에서 <strong>새로고침하며 타임스탬프 변화</strong>를 비교하고, <strong>“코드 보기”</strong>로 실제 구현을 확인하세요.
         </p>
@@ -206,7 +212,7 @@ export default function Page() {
                 {g.pick === "vite" ? "Vite 권장" : "Next.js 권장"}
               </span>
               <p style={{ marginTop: 10, fontWeight: 600 }}>{g.when}</p>
-              <p style={{ marginTop: 6, color: "var(--color-text-sub)", fontSize: 14 }}>{g.why}</p>
+              <p className="mt-1.5 text-sm text-slate-500">{g.why}</p>
             </div>
           ))}
         </div>

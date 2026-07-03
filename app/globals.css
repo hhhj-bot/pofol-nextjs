@@ -1,395 +1,231 @@
-/* 디자인 토큰 — mfg-systems-ui와 동일한 컬러 체계 사용 */
-:root {
-  --color-primary: #1f4e79;
-  --color-secondary: #2e75b6;
-  --color-bg: #ffffff;
-  --color-bg-muted: #f5f7fa;
-  --color-text: #333333;
-  --color-text-sub: #555555;
-  --color-border: #e2e8f0;
-  --color-success: #2e7d32;
-  --color-warning: #c9a227;
-  --color-danger: #c00000;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/*
+ * 라이트/브라이트 테마 — mfg(딥 네이비)와 톤 분리.
+ * 공용 클래스는 @layer components에서 Tailwind 유틸(@apply)로 재정의한다.
+ * (모드 페이지/컴포넌트는 이 클래스들을 그대로 사용 → JSX 수정 없이 밝게 리테마)
+ */
 
-body {
-  font-family: Pretendard, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: var(--color-bg-muted);
-  color: var(--color-text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 48px 24px 80px;
-}
-
-.hero h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.hero p {
-  margin-top: 8px;
-  color: var(--color-text-sub);
-}
-
-.banner {
-  margin: 24px 0;
-  padding: 16px 20px;
-  background: var(--color-bg);
-  border-left: 4px solid var(--color-secondary);
-  border-radius: 6px;
-}
-
-section {
-  margin-top: 40px;
-}
-
-section h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.card {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-/* 비교 표 */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-bg);
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-}
-
-th,
-td {
-  text-align: left;
-  padding: 12px 14px;
-  font-size: 14px;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
-}
-
-thead th {
-  background: var(--color-bg-muted);
-  color: var(--color-primary);
-  font-weight: 700;
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-td.dim {
-  color: var(--color-text-sub);
-}
-
-/* 장단점 2단 그리드 */
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.pros h3 {
-  color: var(--color-success);
-}
-
-.cons h3 {
-  color: var(--color-danger);
-}
-
-.pros h3,
-.cons h3 {
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-ul {
-  padding-left: 18px;
-}
-
-li {
-  margin: 6px 0;
-  font-size: 14px;
-}
-
-.decision {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 999px;
-}
-
-.badge-vite {
-  background: rgba(46, 117, 182, 0.12);
-  color: var(--color-secondary);
-}
-
-.badge-next {
-  background: rgba(31, 78, 121, 0.12);
-  color: var(--color-primary);
-}
-
-.conclusion {
-  margin-top: 40px;
-  padding: 20px;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 8px;
-}
-
-.conclusion h2 {
-  color: #fff;
-  border: none;
-  margin-bottom: 8px;
-}
-
-@media (max-width: 720px) {
-  .grid2,
-  .decision,
-  .demo-grid {
-    grid-template-columns: 1fr;
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-slate-50 font-sans leading-relaxed text-slate-700;
+    /* 상단에 옅은 스카이 글로우 — 밝고 가벼운 인상 */
+    background-image: radial-gradient(
+      1100px 420px at 50% -140px,
+      rgba(56, 189, 248, 0.12),
+      transparent
+    );
+    background-repeat: no-repeat;
   }
 }
 
-/* ── 상단 네비게이션 ─────────────────────────────── */
-.topnav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-}
-.topnav-inner {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-}
-.brand {
-  font-weight: 700;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-.topnav-links {
-  display: flex;
-  gap: 4px;
-}
-.topnav-links a {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-sub);
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-}
-.topnav-links a:hover {
-  background: var(--color-bg-muted);
-  color: var(--color-primary);
-}
+@layer components {
+  .container {
+    @apply mx-auto max-w-4xl px-6 pb-20 pt-12;
+  }
 
-/* ── 홈 데모 링크 카드 ───────────────────────────── */
-.demo-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-.demo-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--color-text);
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-}
-.demo-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(31, 78, 121, 0.12);
-  border-color: var(--color-primary);
-}
-.demo-card b {
-  font-size: 15px;
-  color: var(--color-primary);
-}
-.demo-card small {
-  font-size: 12px;
-  color: var(--color-text-sub);
-}
+  /* ── 히어로 ─────────────────────────────── */
+  .hero h1 {
+    @apply text-3xl font-extrabold tracking-tight text-slate-900;
+  }
+  .hero p {
+    @apply mt-2 text-slate-500;
+  }
 
-/* ── 데모 페이지 헤더 ────────────────────────────── */
-.back {
-  display: inline-block;
-  margin-bottom: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-secondary);
-  text-decoration: none;
-}
-.back:hover {
-  text-decoration: underline;
-}
-.mode-head h1 {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin: 6px 0;
-}
-.mode-head p {
-  color: var(--color-text-sub);
-  max-width: 720px;
-}
-.mode-badge {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  background: rgba(31, 78, 121, 0.1);
-  color: var(--color-primary);
-}
-.hint {
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: rgba(201, 162, 39, 0.1);
-  border-left: 3px solid var(--color-warning);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--color-text);
-}
+  .banner {
+    @apply my-6 rounded-xl border border-brand-100 border-l-4 border-l-brand-500 bg-white px-5 py-4 shadow-soft;
+  }
 
-/* ── 타임스탬프 스탬프 ───────────────────────────── */
-.stamp-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
-}
-.stamp {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-primary);
-  border-radius: 8px;
-  min-width: 240px;
-}
-.stamp-muted {
-  border-color: var(--color-border);
-}
-.stamp-label {
-  font-size: 12px;
-  color: var(--color-text-sub);
-}
-.stamp-value {
-  font-family: monospace;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-.stamp-muted .stamp-value {
-  color: var(--color-text);
-}
+  section {
+    @apply mt-10;
+  }
+  section h2 {
+    @apply mb-4 border-b border-slate-200 pb-2 text-xl font-bold text-slate-900;
+  }
 
-/* ── 상태 배지 (재고 표) ─────────────────────────── */
-.st {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.st-ok {
-  background: rgba(46, 125, 50, 0.12);
-  color: var(--color-success);
-}
-.st-warn {
-  background: rgba(201, 162, 39, 0.15);
-  color: var(--color-warning);
-}
-.st-bad {
-  background: rgba(192, 0, 0, 0.1);
-  color: var(--color-danger);
-}
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-soft;
+  }
 
-/* ── 코드 보기 ───────────────────────────────────── */
-.codeblock {
-  margin-top: 24px;
-}
-.code-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-primary);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.code-toggle:hover {
-  background: var(--color-bg-muted);
-}
-.code-toggle-label {
-  font-family: monospace;
-}
-.chev {
-  transition: transform 0.2s;
-}
-.chev.open {
-  transform: rotate(180deg);
-}
-.code-pre {
-  margin-top: 10px;
-  padding: 16px 18px;
-  background: #0f2333;
-  color: #e6edf3;
-  border-radius: 8px;
-  overflow-x: auto;
-  font-size: 13px;
-  line-height: 1.6;
-}
-.code-pre code {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  white-space: pre;
+  /* ── 표 ─────────────────────────────────── */
+  table {
+    @apply w-full border-collapse overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft;
+  }
+  th,
+  td {
+    @apply border-b border-slate-100 px-4 py-3 text-left align-top text-sm;
+  }
+  thead th {
+    @apply bg-slate-50 font-bold text-slate-600;
+  }
+  tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  tbody tr:hover td {
+    @apply bg-slate-50;
+  }
+  td.dim {
+    @apply text-slate-500;
+  }
+
+  /* ── 장단점 2단 그리드 ──────────────────── */
+  .grid2 {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2;
+  }
+  .pros h3 {
+    @apply mb-2.5 text-base font-semibold text-emerald-600;
+  }
+  .cons h3 {
+    @apply mb-2.5 text-base font-semibold text-rose-600;
+  }
+  ul {
+    @apply list-disc pl-5;
+  }
+  li {
+    @apply my-1.5 text-sm;
+  }
+
+  .decision {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2;
+  }
+
+  /* ── 배지 ───────────────────────────────── */
+  .badge {
+    @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-vite {
+    @apply bg-sky-100 text-sky-700;
+  }
+  .badge-next {
+    @apply bg-brand-100 text-brand-700;
+  }
+
+  /* ── 결론 배너 ──────────────────────────── */
+  .conclusion {
+    @apply mt-10 rounded-2xl bg-brand-gradient p-6 text-white shadow-lift;
+  }
+  .conclusion h2 {
+    @apply mb-2 border-0 text-white;
+  }
+  .conclusion strong {
+    @apply text-white;
+  }
+
+  /* ── 상단 네비게이션 ────────────────────── */
+  .topnav {
+    @apply sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur;
+  }
+  .topnav-inner {
+    @apply mx-auto flex h-14 max-w-4xl items-center justify-between px-6;
+  }
+  .brand {
+    @apply font-extrabold text-brand-600 no-underline;
+  }
+  .topnav-links {
+    @apply flex gap-1;
+  }
+  .topnav-links a {
+    @apply rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-500 no-underline transition-colors;
+  }
+  .topnav-links a:hover {
+    @apply bg-brand-50 text-brand-600;
+  }
+
+  /* ── 홈 데모 링크 카드 ──────────────────── */
+  .demo-grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+  .demo-card {
+    @apply flex flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 no-underline shadow-soft transition-all duration-150;
+  }
+  .demo-card:hover {
+    @apply -translate-y-1 border-brand-300 shadow-lift;
+  }
+  .demo-card b {
+    @apply text-[15px] font-bold text-slate-900;
+  }
+  .demo-card small {
+    @apply text-xs text-slate-500;
+  }
+
+  /* ── 데모 페이지 헤더 ───────────────────── */
+  .back {
+    @apply mb-4 inline-block text-sm font-semibold text-brand-600 no-underline hover:underline;
+  }
+  .mode-head h1 {
+    @apply my-1.5 text-2xl font-extrabold tracking-tight text-slate-900;
+  }
+  .mode-head p {
+    @apply max-w-2xl text-slate-500;
+  }
+  .mode-badge {
+    @apply inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-bold text-brand-700;
+  }
+  .hint {
+    @apply mt-3 rounded-lg border-l-[3px] border-amber-400 bg-amber-50 px-3.5 py-2.5 text-[13px] text-amber-900;
+  }
+
+  /* ── 타임스탬프 스탬프 ──────────────────── */
+  .stamp-row {
+    @apply mt-5 flex flex-wrap gap-3;
+  }
+  .stamp {
+    @apply flex min-w-[240px] flex-col gap-0.5 rounded-2xl border border-brand-200 bg-white px-4 py-3 shadow-soft;
+  }
+  .stamp-muted {
+    @apply border-slate-200;
+  }
+  .stamp-label {
+    @apply text-xs text-slate-500;
+  }
+  .stamp-value {
+    @apply font-mono text-[15px] font-bold text-brand-600;
+  }
+  .stamp-muted .stamp-value {
+    @apply text-slate-700;
+  }
+
+  /* ── 상태 배지 (재고 표) ────────────────── */
+  .st {
+    @apply inline-block rounded-full px-2 py-0.5 text-xs font-semibold;
+  }
+  .st-ok {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+  .st-warn {
+    @apply bg-amber-100 text-amber-700;
+  }
+  .st-bad {
+    @apply bg-rose-100 text-rose-700;
+  }
+
+  /* ── 코드 보기 ──────────────────────────── */
+  .codeblock {
+    @apply mt-6;
+  }
+  .code-toggle {
+    @apply inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50;
+  }
+  .code-toggle-label {
+    @apply font-mono;
+  }
+  .chev {
+    @apply transition-transform duration-200;
+  }
+  .chev.open {
+    @apply rotate-180;
+  }
+  .code-pre {
+    @apply mt-2.5 overflow-x-auto rounded-2xl px-4 py-4 text-[13px] leading-relaxed;
+    background: #0b1220;
+    color: #e6edf3;
+  }
+  .code-pre code {
+    @apply whitespace-pre font-mono;
+  }
 }

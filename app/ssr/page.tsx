@@ -1,7 +1,13 @@
 import { ModeHeader, TimeStamp } from "../components/ModeHeader";
 import { InventoryTable, type InvItem } from "../components/InventoryTable";
-import { CodeBlock } from "../components/CodeBlock";
+import { CodeExplorer, type CodeFile } from "../components/CodeExplorer";
 import { getBaseUrl } from "../lib/base";
+import {
+  SNIPPET_API_ROUTE,
+  SNIPPET_BASE,
+  SNIPPET_INVENTORY_TABLE,
+  SNIPPET_TIMESTAMP,
+} from "../lib/snippets";
 
 // SSR — 요청이 올 때마다 서버에서 렌더한다(정적 캐시 안 함).
 export const dynamic = "force-dynamic";
@@ -14,19 +20,37 @@ async function getData(): Promise<Api> {
   return res.json();
 }
 
-const code = `export const dynamic = "force-dynamic"; // 요청마다 서버에서 렌더(SSR)
+const pageCode = `// app/ssr/page.tsx
+export const dynamic = "force-dynamic"; // ① 요청마다 서버에서 렌더(SSR)
 
 async function getData() {
-  // 서버리스 함수(/api/inventory)를 매 요청마다 호출 · 캐시 안 함
+  // ② 매 요청마다 서버리스 함수 호출 · 캐시 안 함 → 항상 최신
   const res = await fetch(\`\${getBaseUrl()}/api/inventory\`, { cache: "no-store" });
   return res.json();
 }
 
 export default async function Page() {
-  const data = await getData();                 // 서버에서 데이터 확보 → HTML 완성
-  const renderTime = new Date().toISOString();
-  return /* 데이터가 채워진 완성 HTML */;
+  const data = await getData();                // ③ 서버에서 데이터 확보
+  const renderTime = new Date().toISOString();  //    요청 시점의 렌더 시각
+
+  return (
+    <main>
+      {/* ④ 서버가 채운 값을 그대로 HTML에 담아 응답 → 소스보기에도 데이터가 있음 */}
+      <TimeStamp label="API 서버 시각" value={data.serverTime} />
+      <TimeStamp label="페이지 렌더 시각" value={renderTime} />
+      <InventoryTable items={data.items} />
+    </main>
+  );
 }`;
+
+// 코드 탐색기에 노출할 파일 목록 (오른쪽 목록 → 왼쪽 코드)
+const FILES: CodeFile[] = [
+  { name: "app/ssr/page.tsx", desc: "SSR 데이터패칭 (이 화면)", code: pageCode },
+  { name: "app/api/inventory/route.ts", desc: "매 요청 호출되는 서버리스 함수", code: SNIPPET_API_ROUTE },
+  { name: "app/lib/base.ts", desc: "서버→자기 API 절대 URL", code: SNIPPET_BASE },
+  { name: "components/InventoryTable.tsx", desc: "데이터를 그리는 표", code: SNIPPET_INVENTORY_TABLE },
+  { name: "components/TimeStamp.tsx", desc: "시각 스탬프 박스", code: SNIPPET_TIMESTAMP },
+];
 
 export default async function Page() {
   const data = await getData();
@@ -47,7 +71,7 @@ export default async function Page() {
         <h2>재고 스냅샷 · 요청 시점 실시간</h2>
         <InventoryTable items={data.items} />
       </section>
-      <CodeBlock code={code} />
+      <CodeExplorer files={FILES} />
     </main>
   );
 }

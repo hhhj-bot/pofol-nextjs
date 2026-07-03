@@ -8,21 +8,23 @@ import {
   SNIPPET_TIMESTAMP,
 } from "../lib/snippets";
 
-// 동적 함수를 쓰지 않으므로 이 페이지는 "빌드 시 1회" 렌더되어 정적 HTML로 고정된다(SSG).
-const buildTime = new Date().toISOString(); // 모듈 평가 = 빌드 시점에 단 한 번
+// 동적 함수(no-store fetch나 headers 같은 것)를 안 쓰니까 이 페이지는
+// 빌드 때 딱 한 번 렌더돼서 정적 HTML로 굳는다(SSG).
+const buildTime = new Date().toISOString(); // 모듈이 평가되는 빌드 시점에 한 번만 찍힘
 
-const pageCode = `// app/ssg/page.tsx — 별도 설정 없음 = 정적 생성(SSG)
+const pageCode = `// app/ssg/page.tsx — 아무 설정도 안 하면 기본이 정적 생성(SSG)
 
-// ① 동적 함수를 안 쓰면 빌드 때 딱 1번 렌더되어 HTML로 고정된다.
-const buildTime = new Date().toISOString(); // 빌드 시점에 한 번만 실행
+// 동적 함수를 안 쓰면 빌드 때 한 번만 렌더돼서 HTML로 굳는다.
+// 그래서 다시 배포(빌드)하기 전까진 이 값이 안 바뀐다.
+const buildTime = new Date().toISOString();
 
 export default function Page() {
   return (
     <main>
-      {/* ② 빌드 때 찍힌 buildTime이 HTML에 박제 → 재배포(빌드) 전까진 안 변함 */}
+      {/* 빌드 때 찍힌 buildTime이 HTML에 그대로 박혀 나간다 */}
       <TimeStamp label="빌드 시각 (고정)" value={buildTime} />
 
-      {/* ITEMS도 빌드 시점 값 그대로 HTML에 박혀 배포된다 */}
+      {/* ITEMS도 빌드 시점 값 그대로 박제돼 배포된다 */}
       <InventoryTable items={ITEMS} />
     </main>
   );

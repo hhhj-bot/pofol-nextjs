@@ -13,21 +13,21 @@ import {
 type Api = { serverTime: string; items: InvItem[] };
 
 const pageCode = `// app/csr/page.tsx
-"use client"; // ① 클라이언트 컴포넌트
+"use client"; // 클라이언트 컴포넌트
 
 export default function Page() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // ② 브라우저가 마운트된 뒤 fetch — 최초 HTML엔 데이터가 없다
+    // 브라우저가 마운트된 뒤에야 fetch 한다. 그래서 최초 HTML엔 데이터가 없다.
     fetch("/api/inventory").then((r) => r.json()).then(setData);
   }, []);
 
-  if (!data) return <p>불러오는 중…</p>; // ③ 도착 전 로딩 표시
+  if (!data) return <p>불러오는 중…</p>; // 데이터 오기 전 로딩 표시
 
   return (
     <main>
-      {/* ④ 클라이언트가 받은 data를 렌더 → 페이지 소스(Ctrl+U)엔 이 값이 없음 */}
+      {/* 브라우저가 받은 data를 그린다. 페이지 소스(Ctrl+U)엔 이 값이 없다. */}
       <TimeStamp label="API 서버 시각" value={data.serverTime} />
       <InventoryTable items={data.items} />
     </main>
@@ -36,7 +36,7 @@ export default function Page() {
 
 const FILES: CodeFile[] = [
   { name: "app/csr/page.tsx", desc: "CSR 데이터패칭 (이 화면)", code: pageCode },
-  { name: "app/api/inventory/route.ts", desc: "브라우저가 부르는 서버리스 함수", code: SNIPPET_API_ROUTE },
+  { name: "app/api/inventory/route.ts", desc: "브라우저가 호출하는 서버리스 함수", code: SNIPPET_API_ROUTE },
   { name: "components/InventoryTable.tsx", desc: "데이터를 그리는 표", code: SNIPPET_INVENTORY_TABLE },
   { name: "components/TimeStamp.tsx", desc: "시각 스탬프 박스", code: SNIPPET_TIMESTAMP },
 ];

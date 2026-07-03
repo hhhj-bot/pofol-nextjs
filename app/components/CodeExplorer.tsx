@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-// 코드 탐색기 — 오른쪽 파일 목록에서 고르면 왼쪽에 해당 소스를 보여준다.
-// 각 모드 페이지의 데이터패칭 코드 + 실제 공유 컴포넌트(InventoryTable/TimeStamp 등)를 한자리에서 확인.
+// 오른쪽 파일 목록에서 하나 고르면 왼쪽에 그 소스를 보여주는 간단한 코드 뷰어.
+// 페이지의 데이터패칭 코드뿐 아니라 실제로 쓰는 공유 컴포넌트 소스까지 같이 훑어볼 수 있게 했다.
 export type CodeFile = {
-  name: string; // 파일 경로/이름 (목록·헤더에 표시)
-  desc?: string; // 짧은 설명
+  name: string; // 파일 경로나 이름 (목록과 헤더에 표시)
+  desc?: string; // 한 줄 설명
   code: string; // 소스 문자열
 };
 
@@ -29,7 +29,7 @@ export function CodeExplorer({
       </div>
 
       <div className="grid gap-3 md:grid-cols-[1fr_230px]">
-        {/* ── 왼쪽: 선택된 코드 ── */}
+        {/* 왼쪽: 고른 파일의 소스 */}
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-600">
@@ -44,7 +44,7 @@ export function CodeExplorer({
           </pre>
         </div>
 
-        {/* ── 오른쪽: 파일 목록 ── */}
+        {/* 오른쪽: 파일 목록 */}
         <aside className="flex flex-col gap-1.5">
           {files.map((f, idx) => {
             const on = idx === i;

@@ -14,3 +14,9 @@ export function getInventory(): Inventory {
     items: ITEMS,
   };
 }
+
+// SKU 단건 조회 — PDA가 품목 바코드를 스캔했을 때 쓰는 조회 함수.
+// GET /api/inventory/[sku] 가 이 함수를 그대로 호출한다.
+export function getInventoryItem(sku: string): InvItem | undefined {
+  return ITEMS.find((it) => it.sku.toLowerCase() === sku.toLowerCase());
+}

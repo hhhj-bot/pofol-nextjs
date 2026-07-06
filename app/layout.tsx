@@ -18,6 +18,7 @@ const NAV = [
   { href: "/rest-api", label: "REST API" },
   { href: "/swagger", label: "Swagger" },
   { href: "/test", label: "Test" },
+  { href: "/threejs", label: "Three.js" },
 ];
 
 export default function RootLayout({ children }: { children: ReactNode }) {

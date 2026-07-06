@@ -4,17 +4,21 @@ import { useState } from "react";
 import { StackTab } from "./StackTab";
 import { RackDesigner } from "./RackDesigner";
 import { LoadTab } from "./LoadTab";
+import { EquipmentTab } from "./EquipmentTab";
 
 // Three.js 페이지 — 탭 구조.
-//  · 적치   : 재고 데이터로 적재율/Capacity를 3D로 보여주는 뷰어 (단계별 학습)
-//  · 랙 설계: 가상의 랙을 만들어 전체/로케이션 크기를 설정하고 정면도로 비주얼
+//  · 적치    : 재고 데이터로 적재율/Capacity를 3D로 보여주는 뷰어 (단계별 학습)
+//  · 랙 설계 : 가상의 랙을 만들어 전체/로케이션 크기를 설정하고 정면도로 비주얼
+//  · 적재/하중: 설계된 랙에 SKU를 적재하고 하중·적재율을 3D로 확인
+//  · 설비 연동: 창고(WMS)와 설비(컨베이어·IoT·PLC)를 REST API로 이어 실데이터로 구동
 
-type TabKey = "stack" | "rack" | "load";
+type TabKey = "stack" | "rack" | "load" | "equip";
 
 const TABS: { key: TabKey; label: string; desc: string }[] = [
   { key: "stack", label: "적치", desc: "적재율 · Capacity 뷰어" },
   { key: "rack", label: "랙 설계", desc: "로케이션 구성 비주얼" },
   { key: "load", label: "적재/하중", desc: "하중 · 적재율 · SKU" },
+  { key: "equip", label: "설비 연동", desc: "컨베이어 · IoT · PLC" },
 ];
 
 export default function Page() {
@@ -52,7 +56,15 @@ export default function Page() {
       </div>
 
       <div className="mt-6">
-        {tab === "stack" ? <StackTab /> : tab === "rack" ? <RackDesigner /> : <LoadTab />}
+        {tab === "stack" ? (
+          <StackTab />
+        ) : tab === "rack" ? (
+          <RackDesigner />
+        ) : tab === "load" ? (
+          <LoadTab />
+        ) : (
+          <EquipmentTab />
+        )}
       </div>
     </main>
   );

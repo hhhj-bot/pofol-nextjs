@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { getApiDocs } from "../lib/swagger";
 import ReactSwagger from "../components/ReactSwagger";
 
 // /swagger — route.ts들의 @swagger JSDoc 주석에서 만든 OpenAPI 스펙을 SwaggerUI로 렌더링.
-// 스펙 생성은 서버 컴포넌트에서, 실제 UI 렌더링은 클라이언트 컴포넌트(ReactSwagger)에서 한다.
-export default async function SwaggerPage() {
-  const spec = getApiDocs();
-
+// 스펙은 빌드 타임에 scripts/generate-openapi.mjs가 public/openapi.json으로 미리 만들어두고,
+// 여기서는 그 정적 파일 경로만 클라이언트 컴포넌트에 넘긴다(서버리스 함수 용량 문제 회피).
+export default function SwaggerPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 pb-20 pt-12">
       <Link href="/" className="back">비교 홈으로</Link>
@@ -24,7 +22,7 @@ export default async function SwaggerPage() {
       </header>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft">
-        <ReactSwagger spec={spec} />
+        <ReactSwagger url="/openapi.json" />
       </div>
     </main>
   );

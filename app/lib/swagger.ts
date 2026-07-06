@@ -1,64 +1,13 @@
-import { createSwaggerSpec } from "next-swagger-doc";
-
-// app/api 아래 route.ts의 JSDoc(@swagger) 주석을 모아 OpenAPI 스펙으로 만든다.
-// /swagger 페이지가 이 스펙을 SwaggerUI에 그대로 넘긴다.
-export const getApiDocs = () => {
-  return createSwaggerSpec({
-    apiFolder: "app/api",
-    definition: {
-      openapi: "3.0.0",
-      info: {
-        title: "창고 PDA 시뮬레이션 API",
-        version: "1.0.0",
-        description:
-          "WMS 창고에서 PDA(핸디터미널)가 GTL 마스터/싱글 라벨을 스캔하는 상황을 흉내낸 조회 전용 REST API. " +
-          "지금은 GET만 제공하며, 이후 Flutter PDA 앱과 별도로 배포되는 다른 Vercel 프런트에서 이 API를 그대로 호출할 예정이다.",
-      },
-      servers: [{ url: "/", description: "현재 배포" }],
-      tags: [
-        { name: "Hello", description: "가장 단순한 예시 엔드포인트" },
-        { name: "Inventory", description: "재고 조회" },
-        { name: "Labels", description: "GTL 라벨 스캔 시뮬레이션" },
-      ],
-      components: {
-        schemas: {
-          InventoryItem: {
-            type: "object",
-            properties: {
-              sku: { type: "string", example: "FIN-3001" },
-              name: { type: "string", example: "완제품 도어트림" },
-              qty: { type: "number", example: 210 },
-              site: { type: "string", example: "아산" },
-              status: { type: "string", example: "정상" },
-            },
-          },
-          LabelRecord: {
-            type: "object",
-            properties: {
-              labelCode: { type: "string", example: "GTL-MSTR-0001" },
-              labelType: { type: "string", enum: ["MASTER", "SINGLE"] },
-              sku: { type: "string", example: "FIN-3001" },
-              partName: { type: "string", example: "완제품 도어트림" },
-              lotNo: { type: "string", example: "LOT-20260630-01" },
-              qty: { type: "number", example: 210 },
-              boxCount: { type: "number", example: 14, nullable: true },
-              palletNo: { type: "string", example: "PLT-8801", nullable: true },
-              packedAt: { type: "string", format: "date-time" },
-              destination: { type: "string", example: "아산" },
-            },
-          },
-          ErrorResponse: {
-            type: "object",
-            properties: {
-              error: { type: "string", example: "NOT_FOUND" },
-              message: {
-                type: "string",
-                example: "SKU 'XXX' 재고를 찾을 수 없습니다.",
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-};
+// 더 이상 쓰이지 않음(deprecated) — 이 파일을 어디서도 import하지 않는다.
+//
+// OpenAPI 스펙 생성은 scripts/generate-openapi.mjs로 옮겼다. 이유: next-swagger-doc이
+// swagger-jsdoc → swagger-parser → @swagger-api/apidom-*(62MB+)을 끌고 오는데,
+// 이 파일처럼 서버 컴포넌트(app/swagger/page.tsx)에서 직접 호출하면 Next.js가 그
+// 무거운 의존성 전체를 서버리스 함수 트레이싱에 포함시켜 Vercel의 함수 용량 제한
+// (100MB)을 넘겨버렸다(실제로 Vercel deploy에서 "File size limit exceeded" 발생).
+//
+// 지금은 scripts/generate-openapi.mjs가 빌드/개발 서버 시작 전에(prebuild/predev)
+// public/openapi.json을 미리 생성하고, app/swagger/page.tsx는 그 정적 파일 경로만
+// SwaggerUI(app/components/ReactSwagger.tsx)에 넘긴다. 그 결과 next-swagger-doc
+// 계열 패키지는 devDependencies로만 남고 런타임 번들에는 전혀 포함되지 않는다.
+export {};

@@ -5,6 +5,7 @@ import { StackTab } from "./StackTab";
 import { RackDesigner } from "./RackDesigner";
 import { LoadTab } from "./LoadTab";
 import { EquipmentTab } from "./EquipmentTab";
+import { ConveyorTab } from "./ConveyorTab";
 
 // Three.js 페이지 — 탭 구조.
 //  · 적치    : 재고 데이터로 적재율/Capacity를 3D로 보여주는 뷰어 (단계별 학습)
@@ -12,13 +13,14 @@ import { EquipmentTab } from "./EquipmentTab";
 //  · 적재/하중: 설계된 랙에 SKU를 적재하고 하중·적재율을 3D로 확인
 //  · 입출고 : GTL 라벨(마스터/싱글) 기준의 출고·배송·입고 검증 흐름 (컨베이어 설비 연동은 추후 별도 탭)
 
-type TabKey = "stack" | "rack" | "load" | "equip";
+type TabKey = "stack" | "rack" | "load" | "equip" | "conveyor";
 
 const TABS: { key: TabKey; label: string; desc: string }[] = [
   { key: "stack", label: "적치", desc: "CAD 도면 기반 적치" },
   { key: "rack", label: "랙 설계", desc: "로케이션 구성 비주얼" },
   { key: "load", label: "적재/하중", desc: "하중 · 적재율 · SKU" },
   { key: "equip", label: "입출고", desc: "검증 · 배송 · 입/출고" },
+  { key: "conveyor", label: "설비연동", desc: "컨베이어 · PLC/IoT/RFID" },
 ];
 
 export default function Page() {
@@ -62,8 +64,10 @@ export default function Page() {
           <RackDesigner />
         ) : tab === "load" ? (
           <LoadTab />
-        ) : (
+        ) : tab === "equip" ? (
           <EquipmentTab />
+        ) : (
+          <ConveyorTab />
         )}
       </div>
     </main>

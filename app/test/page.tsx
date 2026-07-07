@@ -31,6 +31,23 @@ async function callApi(kind: ScanKind, code: string): Promise<ScanResult> {
   return { url, status: res.status, ms, body };
 }
 
+const RTL_CODE = `// __tests__/InventoryTable.test.tsx — React Testing Library
+import { render, screen } from "@testing-library/react";
+import { InventoryTable } from "@/app/components/InventoryTable";
+
+it("품목명과 상태 배지가 렌더된다", () => {
+  render(
+    <InventoryTable
+      items={[{ sku: "RAW-1002", name: "안료 마스터배치", qty: 85, site: "청주", status: "부족" }]}
+    />
+  );
+  expect(screen.getByText("안료 마스터배치")).toBeInTheDocument();
+  expect(screen.getByText("부족")).toBeInTheDocument();
+});
+
+// 실행: npm test (jest + @testing-library/react)
+// 배포 전 CI에서 이 테스트가 통과해야 배포되도록 파이프라인에 건다.`;
+
 export default function TestPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,18 +68,36 @@ export default function TestPage() {
     <main className="container">
       <Link href="/" className="back">비교 홈으로</Link>
       <header className="mode-head">
-        <span className="mode-badge">PDA 스캔 시뮬레이터</span>
-        <h1>GTL 라벨 · 재고 스캔 테스트</h1>
+        <span className="mode-badge">Test</span>
+        <h1>배포 전 기능 테스트</h1>
         <p>
-          아래 버튼은 실제 창고 PDA가 바코드를 스캔했을 때처럼{" "}
-          <code className="font-mono">GET /api/inventory/{"{sku}"}</code>,{" "}
-          <code className="font-mono">GET /api/labels/{"{code}"}</code>를 그대로 호출한다.
+          두 층으로 검증합니다. (1) <strong>React Testing Library</strong>로 컴포넌트를 자동 테스트하고,
+          (2) 아래에서 실제 API(<code className="font-mono">/api/inventory/{"{sku}"}</code>,{" "}
+          <code className="font-mono">/api/labels/{"{code}"}</code>)를 직접 호출해 배포 전에 동작을 확인합니다.
         </p>
         <div className="hint">
-          존재하지 않는 코드를 스캔하면 404 응답을 그대로 보여준다 — Flutter PDA 앱이 처리할 에러 형태를
-          미리 확인할 수 있다.
+          존재하지 않는 코드를 스캔하면 404 응답을 그대로 보여줍니다 — Flutter PDA 앱이 처리할 에러 형태를
+          미리 확인할 수 있습니다.
         </div>
       </header>
+
+      <section>
+        <h2>React Testing Library — 컴포넌트 자동 테스트</h2>
+        <p className="mb-3 text-sm text-slate-500">
+          화면 컴포넌트를 렌더해 기대한 텍스트·상태가 나오는지 자동 검증합니다. 아래는 재고 표(InventoryTable)
+          예시이며, 배포 전 CI에서 통과해야 배포되도록 파이프라인에 겁니다.
+        </p>
+        <pre className="code-pre m-0 overflow-auto">
+          <code>{RTL_CODE}</code>
+        </pre>
+      </section>
+
+      <section>
+        <h2>배포 전 기능 확인 — 실제 API 호출</h2>
+        <p className="text-sm text-slate-500">
+          자동 테스트로 못 잡는 실제 응답(상태 코드·지연·바디)을 배포 전 여기서 직접 눌러 확인합니다.
+        </p>
+      </section>
 
       <section>
         <h2>0. Hello World (가장 단순한 예시)</h2>

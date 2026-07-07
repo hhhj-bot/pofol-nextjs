@@ -1,129 +1,96 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import { EquipmentPreview } from "./EquipmentPreview";
 
-// 실제 three.js 캔버스는 클라이언트에서만 로드 (SSR 비활성화)
-const Conveyor3D = dynamic(() => import("./Conveyor3D").then((m) => m.Conveyor3D), {
-  ssr: false,
-  loading: () => (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-400">
-      3D 뷰어 불러오는 중…
-    </div>
-  ),
-});
-
-// "설비 연동" 탭 — 창고(WMS)와 설비(컨베이어·IoT·PLC)가 실제로 어떻게 이어지는지 단계별로 학습.
-// 재고 로직만 있던 앞의 두 탭과 달리, 여기서는 GET /api/labels·/api/inventory를 그대로 불러와
-// 컨베이어 위 박스 이동과 PLC 신호를 "실데이터"로 구동한다.
+// "입출고" 탭 — GTL 라벨(마스터/싱글) 기준의 출고·배송·입고 검증 흐름을 단계별로 학습.
+//   싱글 라벨(생산) → 마스터(아우터박스) 포장 → 창고 픽업·출고 → 배송 →
+//   도착지 입고예정서 검증 → 개봉·싱글 확인 → 고객 배송
+// (컨베이어를 이용한 설비 연동은 별개 업무로 추후 도입 예정)
 
 type Step = { n: number; title: string; file: string; flow: string; code: string };
 
 const STEPS: Step[] = [
   {
     n: 1,
-    title: "컨베이어 프레임",
-    file: "app/threejs/Conveyor3D.tsx",
-    flow: "벨트(긴 박스)와 롤러(원기둥 여러 개), 끝단에 공정 투입 게이트를 세운다. 아직 움직이는 것은 없다.",
-    code: `"use client";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+    title: "싱글 라벨 (생산)",
+    file: "GET /api/labels",
+    flow: "생산된 제품을 박스포장하고, 라벨 프린터에서 싱글 라벨을 출력해 각 박스에 부착한다. /api/labels에서 SINGLE만 걸러 낱개 박스를 확인한다.",
+    code: `// 생산된 제품마다 싱글 라벨 부착 → SINGLE만 필터
+const res = await fetch("/api/labels");
+const labels: LabelRecord[] = await res.json();
 
-const LENGTH = 8; // 컨베이어 길이
-
-export function Conveyor3D() {
-  return (
-    <Canvas camera={{ position: [6, 5, 9], fov: 45 }} style={{ height: 420 }}>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[8, 10, 6]} />
-      {/* 벨트 */}
-      <mesh position={[0, 0.3, 0]}>
-        <boxGeometry args={[LENGTH, 0.15, 1]} />
-        <meshStandardMaterial color="#94a3b8" />
-      </mesh>
-      {/* 롤러 */}
-      {Array.from({ length: 9 }).map((_, i) => (
-        <mesh key={i} rotation={[0, 0, Math.PI / 2]} position={[-LENGTH / 2 + i, 0.3, 0]}>
-          <cylinderGeometry args={[0.18, 0.18, 1.1, 16]} />
-          <meshStandardMaterial color="#64748b" />
-        </mesh>
-      ))}
-      <OrbitControls enableDamping />
-    </Canvas>
-  );
-}`,
+const singles = labels.filter((l) => l.labelType === "SINGLE");
+// 각 싱글: labelCode, sku, lotNo, qty (낱개 박스 단위)`,
   },
   {
     n: 2,
-    title: "GTL 라벨 데이터로 박스 이동",
-    file: "app/threejs/Conveyor3D.tsx",
-    flow: "GET /api/labels를 fetch해서 받은 라벨(GTL 마스터/싱글)마다 박스를 하나씩 만들고, useFrame으로 컨베이어를 따라 이동시킨다. 끝에 닿으면 다시 처음으로.",
-    code: `import { useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
-
-function useLabels() {
-  const [labels, setLabels] = useState<LabelRecord[]>([]);
-  useEffect(() => {
-    fetch("/api/labels").then((r) => r.json()).then(setLabels);
-  }, []);
-  return labels;
+    title: "마스터 포장",
+    file: "app/lib/labels.ts",
+    flow: "싱글 N개를 하나의 아우터박스에 담고 마스터 라벨을 부착한다. 싱글은 masterCode로 자기 마스터를 가리킨다.",
+    code: `// 싱글을 마스터(masterCode)별로 묶는다 = 아우터박스 포장
+function singlesOf(masterCode: string) {
+  return labels.filter(
+    (l) => l.labelType === "SINGLE" && l.masterCode === masterCode
+  );
 }
 
-function MovingBox({ label, offset }: { label: LabelRecord; offset: number }) {
-  const ref = useRef<THREE.Mesh>(null!);
-  useFrame(({ clock }) => {
-    const t = (clock.elapsedTime * SPEED + offset) % LENGTH;
-    ref.current.position.x = -LENGTH / 2 + t; // 왼쪽 -> 오른쪽으로 순환 이동
-  });
-  const size = label.labelType === "MASTER" ? 0.6 : 0.4;
-  return (
-    <mesh ref={ref} position={[0, 0.55, 0]}>
-      <boxGeometry args={[size, size, size]} />
-      <meshStandardMaterial color={label.labelType === "MASTER" ? "#2563eb" : "#0ea5e9"} />
-    </mesh>
-  );
-}`,
+// 마스터 한 장에 싱글 N개가 담긴다
+// master.boxCount === singlesOf(master.labelCode).length`,
   },
   {
     n: 3,
-    title: "IoT 센서 · PLC 신호 연동",
-    file: "app/threejs/Conveyor3D.tsx",
-    flow: "GET /api/inventory로 재고 상태(정상/부족/이상)를 함께 받아, 라벨의 SKU와 매칭되는 재고가 이상이면 PLC를 알람(빨강 점멸)으로, 부족이면 주의(노랑)로 바꾼다.",
-    code: `function statusToPlc(status: string) {
-  if (status === "이상") return "ALARM";
-  if (status === "부족") return "WARN";
-  return "RUN";
-}
+    title: "창고 픽업·출고",
+    file: "출고 지시",
+    flow: "마스터 단위로 창고에 보관했다가 픽업해 출고한다. 이 단계부터는 낱개 싱글이 아니라 마스터(아우터박스)가 이동 단위다.",
+    code: `// 마스터 단위로 창고에서 픽업·출고 (싱글 낱개 아님)
+const outbound = labels.filter((l) => l.labelType === "MASTER");
 
-// 라벨들의 매칭 재고 중 가장 심각한 상태를 설비 전체 PLC 상태로 사용
-const worst = labels.reduce((acc, l) => {
-  const item = items.find((i) => i.sku === l.sku);
-  const s = item ? statusToPlc(item.status) : "RUN";
-  return rank(s) > rank(acc) ? s : acc;
-}, "RUN");
-
-// 알람 상태의 센서는 emissive를 깜빡여 경고를 표현
-useFrame(({ clock }) => {
-  if (plc === "ALARM") {
-    const blink = Math.sin(clock.elapsedTime * 8) > 0;
-    material.emissiveIntensity = blink ? 1.2 : 0.2;
-  }
-});`,
+for (const m of outbound) {
+  ship(m.palletNo, m.destination); // 파렛트/목적지로 출고 지시
+}`,
   },
   {
     n: 4,
-    title: "처리량 · PLC 상태 HUD",
-    file: "app/threejs/Conveyor3D.tsx",
-    flow: "경과 시간과 컨베이어 속도로 누적 처리량(박스가 게이트를 통과한 횟수)을 근사 계산해 HUD에 PLC 상태와 함께 띄운다.",
-    code: `const cycleTime = LENGTH / SPEED; // 박스 1개가 컨베이어를 한 바퀴 도는 시간
-const throughput = Math.floor(elapsed / cycleTime) * labels.length;
+    title: "상차·배송",
+    file: "배송 추적",
+    flow: "마스터를 컨베이어로 이송해 트럭에 상차한 뒤 도착지 허브로 배송한다. 운송 중에는 마스터 코드만으로 추적하고, 내부 싱글은 개봉 전까지 열지 않는다.",
+    code: `// 마스터를 도착지로 배송, 마스터 코드로 추적
+const inTransit = masters().map((m) => ({
+  master: m.labelCode,
+  to: m.destination,   // "아산", "이천" ...
+  boxes: m.boxCount,   // 안에 든 싱글 수 (개봉 전엔 미확인)
+}));`,
+  },
+  {
+    n: 5,
+    title: "입고 검증 (송장 대조)",
+    file: "도착지 검증",
+    flow: "도착지에서 PDA로 마스터 라벨과 송장(거래명세서) 라벨을 스캔해 대조한다. 코드가 일치하고, 송장 예정 수량과 실제 싱글 수가 맞는지 확인한다.",
+    code: `// 도착지: PDA로 마스터 라벨 <-> 송장(거래명세서) 대조
+function verifyMaster(code: string) {
+  const m = findLabel(code);
+  const actual = singlesOf(code).length;
+  return {
+    ok: !!m && actual === m?.boxCount,
+    expected: m?.boxCount,
+    actual,
+  };
+}`,
+  },
+  {
+    n: 6,
+    title: "개봉·싱글 확인·고객배송",
+    file: "개봉 검수",
+    flow: "마스터 검증이 끝나면 아우터박스를 개봉해 안의 싱글을 하나씩 검수하고, 각 싱글은 서로 다른 고객사로 개별 배송한다.",
+    code: `// 아우터박스 개봉 → 싱글별 검수 → 싱글마다 각 고객사로 개별 배송
+const singles = singlesOf(master.labelCode);
 
-<div className="hud">
-  <div>PLC 상태: {plcLabel(plc)}</div>
-  <div>누적 처리량: {throughput}개</div>
-  <div>연동 라벨: {labels.length}건 (GET /api/labels)</div>
-</div>`,
+for (const s of singles) {
+  if (scanned.has(s.labelCode)) {
+    deliverTo(s.customer, s.labelCode); // 싱글 → 각 고객사
+  }
+}`,
   },
 ];
 
@@ -134,9 +101,9 @@ export function EquipmentTab() {
   return (
     <div>
       <p className="text-sm leading-relaxed text-slate-600">
-        창고(WMS)와 설비(컨베이어·IoT·PLC)가 실제로 어떻게 이어지는지 단계별로 만들어 봅니다. 앞의 두
-        탭은 재고 로직만 다뤘다면, 여기서는 이미 만든 REST API(<code>/api/labels</code>,{" "}
-        <code>/api/inventory</code>)를 그대로 fetch해서 3D 애니메이션을 구동합니다.
+        GTL 라벨(마스터/싱글) 기준의 <strong>출고 → 배송 → 입고 검증</strong> 흐름을 한 스텝씩 봅니다.
+        싱글 N개가 하나의 마스터(아우터박스)로 묶여 이동하고, 도착지에서 송장 라벨을 PDA로 대조해 검증한 뒤 개봉해
+        싱글을 확인하고, 각 싱글은 서로 다른 고객사로 개별 배송됩니다. 이미 만든 REST API(<code>/api/labels</code>)를 그대로 씁니다.
       </p>
 
       {/* 스텝 탭 */}
@@ -214,15 +181,9 @@ export function EquipmentTab() {
         </button>
       </div>
 
-      <section className="mt-10">
-        <h2>최종 결과물 — 인터랙티브 3D (실데이터 연동)</h2>
-        <p className="mb-3 text-sm text-slate-500">
-          위 스텝을 합친 실제 three.js 뷰어입니다. <code>/api/labels</code>·<code>/api/inventory</code>를
-          그대로 호출해 박스 이동과 PLC 신호를 구동합니다 — <code>/test</code> 페이지에서 스캔했던 그
-          데이터가 여기서는 3D 애니메이션으로 나타납니다. 드래그로 회전, 스크롤로 확대하세요.
-        </p>
-        <Conveyor3D />
-      </section>
+      <p className="mt-8 text-xs text-slate-400">
+        참고: 컨베이어를 이용한 설비 연동(자동 분류·IoT/PLC)은 입출고와 다른 업무라, 별도 탭으로 추후 도입할 예정입니다.
+      </p>
     </div>
   );
 }

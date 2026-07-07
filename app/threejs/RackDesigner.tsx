@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // 랙 설계 탭.
 // 단(레벨)×베이(열)와 로케이션 크기를 입력하면 전체 높이·너비를 계산해
@@ -9,6 +9,48 @@ import { useState } from "react";
 function clampInt(v: number, min: number, max: number) {
   if (Number.isNaN(v)) return min;
   return Math.min(max, Math.max(min, Math.round(v)));
+}
+
+// 숫자 입력 — 편집 중에는 자유 입력, 포커스가 빠질 때만 min~max로 정리한다.
+// (매 키 입력마다 clamp 하면 100 뒤에 숫자가 붙는 문제가 생겨서 draft 문자열로 분리)
+function NumberInput({
+  value,
+  min,
+  max,
+  onCommit,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onCommit: (v: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(value));
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setDraft(String(value));
+  }, [value, editing]);
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={draft}
+      onFocus={() => setEditing(true)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^0-9]/g, "");
+        setDraft(raw);
+        if (raw !== "") onCommit(Math.min(max, Number(raw))); // 편집 중엔 상한만
+      }}
+      onBlur={() => {
+        setEditing(false);
+        const v = draft === "" ? min : clampInt(Number(draft), min, max);
+        onCommit(v);
+        setDraft(String(v));
+      }}
+      className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none"
+    />
+  );
 }
 
 const RACK_DEPTH = 1100; // 랙 안길이(mm) — 평면도 footprint용
@@ -58,14 +100,7 @@ export function RackDesigner() {
     <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
       {label}
       <div className="flex items-center gap-1">
-        <input
-          type="number"
-          value={value}
-          min={min}
-          max={max}
-          onChange={(e) => onChange(clampInt(Number(e.target.value), min, max))}
-          className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-800 focus:border-brand-400 focus:outline-none"
-        />
+        <NumberInput value={value} min={min} max={max} onCommit={onChange} />
         {suffix && <span className="text-[11px] text-slate-400">{suffix}</span>}
       </div>
     </label>
@@ -180,8 +215,8 @@ export function RackDesigner() {
               {/* 랙 두 열 (footprint, top view) */}
               <rect x={72} y={36} width={216} height={20} fill="#64748b" />
               <rect x={72} y={94} width={216} height={20} fill="#64748b" />
-              <text x={180} y={50} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">{rackName} · W {dimW} × D {RACK_DEPTH.toLocaleString()}</text>
-              <text x={180} y={108} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">{rackName}B · {bays}베이</text>
+              <text x={180} y={50} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">{rackName} 앞열 · {bays}베이 · W {dimW} × D {RACK_DEPTH.toLocaleString()}</text>
+              <text x={180} y={108} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">{rackName} 뒷열 · {bays}베이</text>
 
               {/* 동선(통로) — 랙 사이 + 흐름 화살표 */}
               <rect x={48} y={58} width={264} height={34} fill="#f1f5f9" />
@@ -200,6 +235,7 @@ export function RackDesigner() {
             </svg>
             <p className="mt-2 text-xs text-slate-400">
               입고장(IN) → 통로(동선) → 랙 적치 → 출고장(OUT) 흐름과 비상 출구(EXIT)를 함께 배치합니다.
+              앞열·뒷열은 <strong>같은 {rackName} 설계</strong>를 통로 양쪽에 마주보게 놓은 예시입니다(별도 랙 아님).
               로케이션 코드 = 랙이름-단-베이 (예: {rackName}-{levels}-1).
             </p>
           </div>

@@ -121,16 +121,21 @@
     @apply sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur;
   }
   .topnav-inner {
-    @apply mx-auto flex h-14 max-w-4xl items-center justify-between px-6;
+    @apply mx-auto flex h-14 max-w-4xl items-center gap-3 px-4 sm:px-6;
   }
   .brand {
-    @apply font-extrabold text-brand-600 no-underline;
+    @apply shrink-0 font-extrabold text-brand-600 no-underline;
   }
   .topnav-links {
-    @apply flex gap-1;
+    /* 모바일: 링크가 넘치면 가로 스크롤(스크롤바 숨김). 데스크톱: 우측 정렬 */
+    @apply flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:justify-end;
+    scrollbar-width: none;
+  }
+  .topnav-links::-webkit-scrollbar {
+    display: none;
   }
   .topnav-links a {
-    @apply rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-500 no-underline transition-colors;
+    @apply shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-500 no-underline transition-colors sm:px-3;
   }
   .topnav-links a:hover {
     @apply bg-brand-50 text-brand-600;

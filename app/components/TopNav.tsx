@@ -14,7 +14,8 @@ const NAV = [
   { href: "/rest-api", label: "REST API" },
   { href: "/swagger", label: "Swagger" },
   { href: "/test", label: "Test" },
-  { href: "/threejs", label: "Three.js" },
+  { href: "/threejs", label: "업무PoC" },
+  { href: "/planning", label: "업무기획" },
 ];
 
 export function TopNav() {

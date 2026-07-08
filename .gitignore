@@ -23,3 +23,6 @@ next-env.d.ts.bak
 # OS
 .DS_Store
 .vercel
+
+# Claude 작업 지침 (git 업로드 제외)
+CLAUDE.md

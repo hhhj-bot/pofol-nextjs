@@ -23,5 +23,6 @@ export const dynamic = "force-dynamic";
  *                 $ref: '#/components/schemas/LabelRecord'
  */
 export async function GET() {
+  // CORS는 middleware.ts 에서 /api/* 전역으로 처리한다(여기선 데이터만 반환).
   return NextResponse.json(LABELS);
 }

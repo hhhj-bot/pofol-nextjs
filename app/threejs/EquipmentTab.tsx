@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { EquipmentPreview } from "./EquipmentPreview";
+
+// 입고 스캔 3D(마스터 개봉·싱글 검수)는 클라이언트에서만 로드
+const InboundScan3D = dynamic(() => import("./InboundScan3D").then((m) => m.InboundScan3D), {
+  ssr: false,
+  loading: () => (
+    <div className="grid h-[440px] place-items-center rounded-xl border border-slate-200 bg-white text-sm text-slate-400">
+      3D 로딩 중…
+    </div>
+  ),
+});
 
 // "입출고" 탭 — GTL 라벨(마스터/싱글) 기준의 출고·배송·입고 검증 흐름을 단계별로 학습.
 //   싱글 라벨(생산) → 마스터(아우터박스) 포장 → 창고 픽업·출고 → 배송 →
@@ -181,8 +192,19 @@ export function EquipmentTab() {
         </button>
       </div>
 
+      {/* 입고 스캔 3D */}
+      <section className="mt-10">
+        <h2>입고 스캔 3D — 마스터 개봉 · 싱글 검수</h2>
+        <p className="mb-2 text-sm text-slate-500">
+          도착한 마스터(M1)를 PDA로 스캔해 검증하고, 개봉해 안의 싱글(S1/S2/S3)을 하나씩 스캔·검수합니다.
+          빨강 점멸 = 스캔 중, 초록 = 검증 완료. 오른쪽 <strong>WMS/PDA 위젯</strong>이 WMS 입고예정 데이터와
+          연동돼 스캔 순서·상태와 각 싱글의 최종 배송지를 실시간으로 보여줍니다. (마우스로 회전·확대)
+        </p>
+        <InboundScan3D />
+      </section>
+
       <p className="mt-8 text-xs text-slate-400">
-        참고: 컨베이어를 이용한 설비 연동(자동 분류·IoT/PLC)은 입출고와 다른 업무라, 별도 탭으로 추후 도입할 예정입니다.
+        참고: 컨베이어 자동 분류·PLC/IoT/RFID 설비 연동은 별도 <strong>설비연동</strong> 탭에서 다룹니다.
       </p>
     </div>
   );

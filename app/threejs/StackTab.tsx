@@ -166,7 +166,7 @@ export function StackTab() {
           <AutomationFlow />
 
           {/* A vs B — 축이 다른 두 자동화 전략 비교 */}
-          <div className="mt-4 mb-1.5 text-xs font-semibold text-slate-500">A vs B — 어떤 요건이면 뭘 고르나</div>
+          <div className="mt-4 mb-1.5 text-xs font-semibold text-slate-500">자동화 비교</div>
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full min-w-[520px] border-collapse text-sm">
               <thead>

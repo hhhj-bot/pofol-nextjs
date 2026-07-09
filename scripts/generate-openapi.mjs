@@ -27,6 +27,7 @@ const spec = createSwaggerSpec({
       { name: "Hello", description: "가장 단순한 예시 엔드포인트" },
       { name: "Inventory", description: "재고 조회" },
       { name: "Labels", description: "GTL 라벨 스캔 시뮬레이션" },
+      { name: "Outbound", description: "출고 지시/이력" },
     ],
     components: {
       schemas: {
@@ -38,6 +39,23 @@ const spec = createSwaggerSpec({
             qty: { type: "number", example: 210 },
             site: { type: "string", example: "아산" },
             status: { type: "string", example: "정상" },
+            location: { type: "string", example: "R1-1-1", description: "로케이션 코드(랙이름-행-열)" },
+            unitWeightKg: { type: "number", example: 12, description: "단위 중량(kg)" },
+            totalWeightKg: { type: "number", example: 2520, description: "총중량(kg) = 수량 x 단위중량" },
+          },
+        },
+        OutboundOrder: {
+          type: "object",
+          properties: {
+            orderNo: { type: "string", example: "OUT-20260709-01" },
+            sku: { type: "string", example: "FIN-3001" },
+            name: { type: "string", example: "완제품 도어트림" },
+            qty: { type: "number", example: 60 },
+            fromLocation: { type: "string", example: "R1-1-1", description: "피킹 로케이션" },
+            destination: { type: "string", example: "현대트랜시스(아산)" },
+            status: { type: "string", enum: ["대기", "피킹중", "출고완료"] },
+            requestedAt: { type: "string", format: "date-time" },
+            picker: { type: "string", example: "김창고", nullable: true },
           },
         },
         LabelRecord: {

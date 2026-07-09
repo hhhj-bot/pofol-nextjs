@@ -5,6 +5,8 @@ export type InvItem = {
   qty: number;
   site: string;
   status: string;
+  location: string; // 로케이션 코드 (랙이름-행-열, 예: R1-1-3)
+  unitWeightKg: number; // 단위 중량(kg) — 낱개/박스 1개 기준
 };
 
 function statusClass(s: string) {

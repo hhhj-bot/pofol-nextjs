@@ -23,6 +23,10 @@
     {
       "name": "Labels",
       "description": "GTL 라벨 스캔 시뮬레이션"
+    },
+    {
+      "name": "Outbound",
+      "description": "출고 지시/이력"
     }
   ],
   "components": {
@@ -49,6 +53,68 @@
           "status": {
             "type": "string",
             "example": "정상"
+          },
+          "location": {
+            "type": "string",
+            "example": "R1-1-1",
+            "description": "로케이션 코드(랙이름-행-열)"
+          },
+          "unitWeightKg": {
+            "type": "number",
+            "example": 12,
+            "description": "단위 중량(kg)"
+          },
+          "totalWeightKg": {
+            "type": "number",
+            "example": 2520,
+            "description": "총중량(kg) = 수량 x 단위중량"
+          }
+        }
+      },
+      "OutboundOrder": {
+        "type": "object",
+        "properties": {
+          "orderNo": {
+            "type": "string",
+            "example": "OUT-20260709-01"
+          },
+          "sku": {
+            "type": "string",
+            "example": "FIN-3001"
+          },
+          "name": {
+            "type": "string",
+            "example": "완제품 도어트림"
+          },
+          "qty": {
+            "type": "number",
+            "example": 60
+          },
+          "fromLocation": {
+            "type": "string",
+            "example": "R1-1-1",
+            "description": "피킹 로케이션"
+          },
+          "destination": {
+            "type": "string",
+            "example": "현대트랜시스(아산)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "대기",
+              "피킹중",
+              "출고완료"
+            ]
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "picker": {
+            "type": "string",
+            "example": "김창고",
+            "nullable": true
           }
         }
       },
@@ -295,6 +361,85 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/LabelRecord"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/outbound/{orderNo}": {
+      "get": {
+        "summary": "출고 지시 단건 조회",
+        "description": "출고 지시 번호로 지시 하나를 조회한다.",
+        "tags": [
+          "Outbound"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderNo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "OUT-20260709-01",
+            "description": "조회할 출고 지시 번호"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회된 출고 지시",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutboundOrder"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 출고 지시를 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/outbound": {
+      "get": {
+        "summary": "출고 지시 목록 조회",
+        "description": "재고(로케이션)에서 피킹해 도착지로 내보내는 출고 지시/이력 목록. Flutter 출고 화면에서 사용한다.",
+        "tags": [
+          "Outbound"
+        ],
+        "responses": {
+          "200": {
+            "description": "출고 지시 목록과 서버 시각",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "serverTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "generatedBy": {
+                      "type": "string"
+                    },
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OutboundOrder"
+                      }
+                    }
                   }
                 }
               }

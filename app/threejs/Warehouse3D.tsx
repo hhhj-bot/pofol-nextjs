@@ -2,10 +2,11 @@
 
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { LOCS, LEVELS, BAYS, ALLOWABLE, levelLoad, loadColor } from "./LoadPreview";
+import { type Loc, LEVELS, BAYS, ALLOWABLE, levelLoadOf, loadColor } from "./LoadPreview";
 
 // 스텝들을 합친 실제 three.js 뷰어(최종 결과물).
-// 랙 빔은 레벨별 하중으로 색이 바뀌고, 적재된 SKU는 파란 박스로 올라간다.
+// LoadTab의 적재 상태(locs)를 받아 미리보기와 실시간으로 동기화된다.
+// 랙 빔은 레벨별 하중으로 색이 바뀌고, 적재된 SKU는 파란 박스로 올라간다(바닥부터).
 
 const LW = 1.2; // 베이(가로) 간격
 const LH = 1.0; // 레벨(높이) 간격
@@ -17,12 +18,12 @@ function cellPos(level: number, bay: number): [number, number, number] {
   return [x, y, 0];
 }
 
-function Beams() {
+function Beams({ locs }: { locs: Loc[] }) {
   const width = BAYS * LW + 0.3;
   return (
     <group>
       {Array.from({ length: LEVELS + 1 }).map((_, i) => {
-        const color = i >= 1 ? loadColor(levelLoad(i) / ALLOWABLE) : "#94a3b8";
+        const color = i >= 1 ? loadColor(levelLoadOf(locs, i) / ALLOWABLE) : "#94a3b8";
         return (
           <mesh key={i} position={[0, i * LH, 0]}>
             <boxGeometry args={[width, 0.08, LD + 0.3]} />
@@ -53,20 +54,22 @@ function Uprights() {
   );
 }
 
-function Pallets() {
+function Pallets({ locs }: { locs: Loc[] }) {
   return (
     <group>
-      {LOCS.filter((l) => l.sku).map((l) => (
-        <mesh key={l.code} position={cellPos(l.level, l.bay)}>
-          <boxGeometry args={[LW * 0.8, LH * 0.6, LD * 0.8]} />
-          <meshStandardMaterial color="#3b82f6" />
-        </mesh>
-      ))}
+      {locs
+        .filter((l) => l.sku)
+        .map((l) => (
+          <mesh key={l.code} position={cellPos(l.level, l.bay)}>
+            <boxGeometry args={[LW * 0.8, LH * 0.6, LD * 0.8]} />
+            <meshStandardMaterial color="#3b82f6" />
+          </mesh>
+        ))}
     </group>
   );
 }
 
-export function Warehouse3D() {
+export function Warehouse3D({ locs }: { locs: Loc[] }) {
   return (
     <div style={{ height: 440 }} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <Canvas camera={{ position: [6, 5, 8], fov: 45 }}>
@@ -78,8 +81,8 @@ export function Warehouse3D() {
           <meshStandardMaterial color="#eef2f7" />
         </mesh>
         <Uprights />
-        <Beams />
-        <Pallets />
+        <Beams locs={locs} />
+        <Pallets locs={locs} />
         <OrbitControls enableDamping />
       </Canvas>
     </div>

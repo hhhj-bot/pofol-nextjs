@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { LoadPreview } from "./LoadPreview";
+import { LoadPreview, LOCS, settleAll, toggleLoc, type Loc } from "./LoadPreview";
 
 // 실제 three.js 캔버스는 클라이언트에서만 로드 (SSR 비활성화)
 const Warehouse3D = dynamic(() => import("./Warehouse3D").then((m) => m.Warehouse3D), {
@@ -123,6 +123,10 @@ export function LoadTab() {
   const [step, setStep] = useState(1);
   const s = STEPS[step - 1];
 
+  // 적재 상태를 여기서 소유해 2D 미리보기와 3D 뷰어가 실시간으로 공유한다.
+  const [locs, setLocs] = useState<Loc[]>(() => settleAll(LOCS));
+  const toggle = (bay: number, level: number) => setLocs((prev) => toggleLoc(prev, bay, level));
+
   return (
     <div>
       <p className="text-sm leading-relaxed text-slate-600">
@@ -180,7 +184,7 @@ export function LoadTab() {
         </div>
         <div className="min-w-0">
           <div className="mb-1.5 text-xs font-semibold text-slate-500">결과 화면 (미리보기)</div>
-          <LoadPreview step={s.n} />
+          <LoadPreview step={s.n} locs={locs} onToggle={toggle} />
         </div>
       </div>
 
@@ -208,10 +212,11 @@ export function LoadTab() {
       <section className="mt-10">
         <h2>최종 결과물 — 인터랙티브 3D</h2>
         <p className="mb-3 text-sm text-slate-500">
-          위 스텝을 합친 실제 three.js 뷰어입니다. 드래그로 회전, 스크롤로 확대하세요. 레벨 빔 색 = 하중
-          상태(초록 여유 / 노랑 주의 / 빨강 초과), 파란 박스 = 적재된 SKU입니다.
+          위 미리보기에서 클릭한 적재 상태가 <strong>그대로 실시간 반영</strong>되는 실제 three.js 뷰어입니다.
+          드래그로 회전, 스크롤로 확대하세요. 레벨 빔 색 = 하중 상태(초록 여유 / 노랑 주의 / 빨강 초과),
+          파란 박스 = 적재된 SKU이며 바닥부터 쌓입니다.
         </p>
-        <Warehouse3D />
+        <Warehouse3D locs={locs} />
       </section>
     </div>
   );

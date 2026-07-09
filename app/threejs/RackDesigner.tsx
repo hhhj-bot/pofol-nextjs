@@ -82,12 +82,36 @@ export function RackDesigner() {
   const drawH = overallH * scale;
   const originX = PAD_L + (availW - drawW) / 2;
   const originY = PAD_T + (availH - drawH) / 2;
-  const showLabels = cellW > 38 && cellH > 22;
+  const showLabels = cellW > 24 && cellH > 14;
+  const frontFont = cellW < 46 ? 6.5 : 8.5;
   const dimW = overallW.toLocaleString();
   const dimH = overallH.toLocaleString();
 
   const rows = Array.from({ length: levels });
   const cols = Array.from({ length: bays });
+
+  // ── 평면도: 10,000 x 8,000 창고에 랙을 실제 치수로 스케일 배치 ──
+  const WH_W = 10000; // 창고 내부 가로(mm)
+  const WH_D = 8000; //  창고 내부 세로(mm)
+  const P_VW = 360, P_VH = 232;
+  const P_L = 34, P_T = 22, P_R = 18, P_B = 30;
+  const pAvailW = P_VW - P_L - P_R;
+  const pAvailD = P_VH - P_T - P_B;
+  const pScale = Math.min(pAvailW / WH_W, pAvailD / WH_D);
+  const whW = WH_W * pScale;
+  const whD = WH_D * pScale;
+  const whX = P_L + (pAvailW - whW) / 2;
+  const whY = P_T;
+  const rackFits = overallW <= WH_W; // 랙 전체너비가 창고 폭을 넘는지
+  const rackWpx = Math.min(overallW, WH_W) * pScale; // 랙 footprint 폭(스케일)
+  const rackDpx = RACK_DEPTH * pScale;
+  const rackX = whX + (whW - rackWpx) / 2;
+  const frontY = whY + whD * 0.14;
+  const backY = whY + whD - whD * 0.14 - rackDpx;
+  const aisleY = frontY + rackDpx;
+  const aisleH = backY - aisleY;
+  const cellWpx = rackWpx / bays;
+  const planLabel = cellWpx > 22; // 셀에 로케이션 코드 표시 가능 여부
 
   const numberField = (
     label: string,
@@ -172,7 +196,7 @@ export function RackDesigner() {
                     <g key={`${row}-${col}`}>
                       <rect x={x} y={y} width={cellW} height={cellH} fill="#eff6ff" stroke="#bfdbfe" strokeWidth={1} />
                       {showLabels && (
-                        <text x={x + cellW / 2} y={y + cellH / 2 + 3} textAnchor="middle" fontSize="9" className="fill-slate-500">
+                        <text x={x + cellW / 2} y={y + cellH / 2 + 2.5} textAnchor="middle" fontSize={frontFont} className="fill-slate-500">
                           {rackName}-{level}-{bay}
                         </text>
                       )}
@@ -193,63 +217,77 @@ export function RackDesigner() {
               <line x1={originX - 20} y1={originY + drawH} x2={originX - 12} y2={originY + drawH} stroke="#2563eb" strokeWidth="0.9" />
               <text transform={`rotate(-90 ${originX - 22} ${originY + drawH / 2})`} x={originX - 22} y={originY + drawH / 2} textAnchor="middle" fontSize="9" fill="#2563eb">전체 높이 {dimH}</text>
             </svg>
+            <p className="mt-2 text-xs text-slate-400">
+              로케이션 코드 = <strong>랙이름-단-베이</strong> (예: {rackName}-{levels}-1 = {levels}단 1베이).
+              평면도의 행-열과 합쳐 랙 안 위치를 특정합니다.
+            </p>
           </div>
 
           {/* 평면도 (동선·입고장·출고장·출구) */}
           <div className="min-w-0">
             <div className="mb-1.5 text-xs font-semibold text-slate-500">창고 평면도 (동선 · 입고장 · 출고장 · 출구)</div>
-            <svg viewBox="0 0 360 210" className="w-full rounded-xl border border-slate-200 bg-white">
-              {/* 창고 외벽 */}
-              <rect x={14} y={12} width={332} height={180} fill="#fff" stroke="#475569" strokeWidth="2.5" />
+            <svg viewBox={`0 0 ${P_VW} ${P_VH}`} className="w-full rounded-xl border border-slate-200 bg-white">
+              {/* 창고 외벽 (10,000 x 8,000 mm) */}
+              <rect x={whX} y={whY} width={whW} height={whD} fill="#fff" stroke="#475569" strokeWidth="2.5" />
+              <rect x={whX + 3} y={whY + 3} width={whW - 6} height={whD - 6} fill="none" stroke="#e2e8f0" strokeWidth="0.7" />
 
-              {/* 입고장 IN (좌측, 통로 레벨) */}
-              <rect x={14} y={76} width={26} height={30} fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
-              <text x={27} y={90} textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="700">입고</text>
-              <text x={27} y={101} textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="700">IN</text>
+              {/* 창고 치수 (고정) */}
+              <line x1={whX} y1={whY - 8} x2={whX + whW} y2={whY - 8} stroke="#2563eb" strokeWidth="0.8" />
+              <text x={whX + whW / 2} y={whY - 11} textAnchor="middle" fontSize="8" fill="#2563eb">10,000</text>
+              <text transform={`rotate(-90 ${whX - 9} ${whY + whD / 2})`} x={whX - 9} y={whY + whD / 2} textAnchor="middle" fontSize="8" fill="#2563eb">8,000</text>
 
-              {/* 출고장 OUT (우측, 통로 레벨) */}
-              <rect x={320} y={76} width={26} height={30} fill="#dbeafe" stroke="#2563eb" strokeWidth="1" />
-              <text x={333} y={90} textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="700">출고</text>
-              <text x={333} y={101} textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="700">OUT</text>
+              {/* 실시간 정보 (전체너비·베이·칸수) */}
+              <text x={whX + 6} y={whY + 13} fontSize="7.5" fill="#334155" fontWeight="700">랙 {rackName}</text>
+              <text x={whX + 6} y={whY + 23} fontSize="7" fill={rackFits ? "#475569" : "#dc2626"}>
+                너비 {dimW}mm · 베이 {bays} · {bays * 2}칸{rackFits ? "" : " · 창고폭 초과"}
+              </text>
 
-              {/* 앞열 (1행) */}
-              <text x={180} y={34} textAnchor="middle" fontSize="8" fill="#334155" fontWeight="700">{rackName} 앞열 · {bays}베이 · W {dimW} × D {RACK_DEPTH.toLocaleString()}</text>
-              <rect x={72} y={40} width={216} height={24} fill="#64748b" />
+              {/* 입고 IN / 출고 OUT (통로 레벨) */}
+              <rect x={whX} y={aisleY + aisleH / 2 - 13} width={12} height={26} fill="#fef3c7" stroke="#d97706" strokeWidth="0.8" />
+              <text x={whX + 6} y={aisleY + aisleH / 2 + 2} textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="700">IN</text>
+              <rect x={whX + whW - 12} y={aisleY + aisleH / 2 - 13} width={12} height={26} fill="#dbeafe" stroke="#2563eb" strokeWidth="0.8" />
+              <text x={whX + whW - 6} y={aisleY + aisleH / 2 + 2} textAnchor="middle" fontSize="6" fill="#1d4ed8" fontWeight="700">OUT</text>
+
+              {/* 통로(동선) */}
+              <rect x={whX + 14} y={aisleY} width={whW - 28} height={aisleH} fill="#f8fafc" />
+              {[0, 1, 2, 3].map((i) => (
+                <text key={"ar" + i} x={whX + whW / 2 - 66 + i * 44} y={aisleY + aisleH / 2 + 4} fontSize="12" fill="#2563eb">→</text>
+              ))}
+
+              {/* 앞열 (1행) — 실제 치수 스케일 */}
+              <rect x={rackX} y={frontY} width={rackWpx} height={rackDpx} fill="#64748b" />
               {Array.from({ length: bays - 1 }).map((_, i) => (
-                <line key={"fd" + i} x1={72 + (216 / bays) * (i + 1)} y1={40} x2={72 + (216 / bays) * (i + 1)} y2={64} stroke="#cbd5e1" strokeWidth="0.7" />
+                <line key={"fd" + i} x1={rackX + cellWpx * (i + 1)} y1={frontY} x2={rackX + cellWpx * (i + 1)} y2={frontY + rackDpx} stroke="#cbd5e1" strokeWidth="0.6" />
               ))}
               {Array.from({ length: bays }).map((_, c) => (
-                <text key={"fc" + c} x={72 + (216 / bays) * (c + 0.5)} y={55} textAnchor="middle" fontSize="6" fill="#fff">{rackName}-1-{c + 1}</text>
+                <text key={"fc" + c} x={rackX + cellWpx * (c + 0.5)} y={frontY + rackDpx / 2 + 2} textAnchor="middle" fontSize={planLabel ? 5 : 6} fill="#fff">{planLabel ? `${rackName}-1-${c + 1}` : c + 1}</text>
               ))}
+              <text x={rackX + rackWpx + 4} y={frontY + rackDpx / 2 + 2.5} fontSize="6.5" fill="#334155" fontWeight="700">앞열</text>
 
-              {/* 동선(통로) — 앞열·뒷열 사이 */}
-              <rect x={48} y={72} width={264} height={30} fill="#f1f5f9" />
-              <text x={54} y={90} fontSize="7.5" fill="#94a3b8">통로(동선)</text>
-              {[0, 1, 2, 3].map((i) => (
-                <text key={"ar" + i} x={140 + i * 44} y={91} fontSize="12" fill="#2563eb">→</text>
-              ))}
-              <text x={44} y={95} fontSize="12" fill="#d97706">→</text>
-              <text x={310} y={95} fontSize="12" fill="#2563eb">→</text>
+              {/* 랙 전체너비 치수 (실시간) */}
+              <line x1={rackX} y1={frontY + rackDpx + 5} x2={rackX + rackWpx} y2={frontY + rackDpx + 5} stroke="#2563eb" strokeWidth="0.8" />
+              <line x1={rackX} y1={frontY + rackDpx + 2} x2={rackX} y2={frontY + rackDpx + 8} stroke="#2563eb" strokeWidth="0.8" />
+              <line x1={rackX + rackWpx} y1={frontY + rackDpx + 2} x2={rackX + rackWpx} y2={frontY + rackDpx + 8} stroke="#2563eb" strokeWidth="0.8" />
+              <text x={rackX + rackWpx / 2} y={frontY + rackDpx + 14} textAnchor="middle" fontSize="7" fill="#2563eb">전체너비 {dimW}</text>
 
               {/* 뒷열 (2행) */}
-              <rect x={72} y={110} width={216} height={24} fill="#64748b" />
+              <rect x={rackX} y={backY} width={rackWpx} height={rackDpx} fill="#64748b" />
               {Array.from({ length: bays - 1 }).map((_, i) => (
-                <line key={"bd" + i} x1={72 + (216 / bays) * (i + 1)} y1={110} x2={72 + (216 / bays) * (i + 1)} y2={134} stroke="#cbd5e1" strokeWidth="0.7" />
+                <line key={"bd" + i} x1={rackX + cellWpx * (i + 1)} y1={backY} x2={rackX + cellWpx * (i + 1)} y2={backY + rackDpx} stroke="#cbd5e1" strokeWidth="0.6" />
               ))}
               {Array.from({ length: bays }).map((_, c) => (
-                <text key={"bc" + c} x={72 + (216 / bays) * (c + 0.5)} y={125} textAnchor="middle" fontSize="6" fill="#fff">{rackName}-2-{c + 1}</text>
+                <text key={"bc" + c} x={rackX + cellWpx * (c + 0.5)} y={backY + rackDpx / 2 + 2} textAnchor="middle" fontSize={planLabel ? 5 : 6} fill="#fff">{planLabel ? `${rackName}-2-${c + 1}` : c + 1}</text>
               ))}
-              <text x={180} y={148} textAnchor="middle" fontSize="8" fill="#334155" fontWeight="700">{rackName} 뒷열 · {bays}베이 · W {dimW} × D {RACK_DEPTH.toLocaleString()}</text>
+              <text x={rackX + rackWpx + 4} y={backY + rackDpx / 2 + 2.5} fontSize="6.5" fill="#334155" fontWeight="700">뒷열</text>
 
-              {/* 출구 EXIT (하단 벽 개구부) */}
-              <text x={180} y={170} textAnchor="middle" fontSize="11" fill="#16a34a">↓</text>
-              <rect x={164} y={186} width={32} height={8} fill="#dcfce7" stroke="#16a34a" strokeWidth="1" />
-              <text x={205} y={192} fontSize="8" fill="#166534" fontWeight="700">출구 EXIT</text>
+              {/* 출구 EXIT (하단 벽) */}
+              <rect x={whX + whW / 2 - 16} y={whY + whD - 4} width={32} height={8} fill="#dcfce7" stroke="#16a34a" strokeWidth="1" />
+              <text x={whX + whW / 2} y={whY + whD + 15} textAnchor="middle" fontSize="7.5" fill="#166534" fontWeight="700">출구 EXIT</text>
             </svg>
             <p className="mt-2 text-xs text-slate-400">
-              입고장(IN) → 통로(동선) → 랙 적치 → 출고장(OUT) 흐름과 비상 출구(EXIT)를 함께 배치합니다.
-              통로를 사이에 둔 앞열(1행)·뒷열(2행)에 <strong>{rackName}</strong>을 배치하고, 각 로케이션은
-              <strong>랙이름-행-열</strong>로 자동 네이밍됩니다 (예: {rackName}-1-1, {rackName}-2-{bays}).
+              <strong>10,000 × 8,000mm</strong> 창고에 랙을 실제 치수로 배치합니다. 랙 설정(베이·로케이션 너비)을 바꾸면
+              평면도의 랙 폭·베이·칸수가 실시간으로 반영됩니다. 통로를 사이에 둔 앞열(1행)·뒷열(2행)에 <strong>{rackName}</strong>을
+              배치하고, 각 로케이션은 <strong>랙이름-행-열</strong>로 자동 네이밍됩니다 (예: {rackName}-1-1, {rackName}-2-{bays}).
               정면도의 단(레벨)까지 합치면 랙이름-단-베이로 세분화됩니다.
             </p>
           </div>

@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // 라우트 핸들러마다 헤더를 반복하지 않도록 미들웨어 한 곳에서 처리한다.
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 

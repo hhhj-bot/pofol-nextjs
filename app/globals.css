@@ -234,3 +234,26 @@
     @apply whitespace-pre font-mono;
   }
 }
+
+
+@layer components {
+  /* 관제화면 등 표 스크롤 — 스크롤바가 생겨도 깔끔하게 */
+  .thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .thin-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  .thin-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  .thin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

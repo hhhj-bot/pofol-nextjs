@@ -38,10 +38,10 @@ export type OutboundOrder = {
 // 고객사별 주문 메타 (주문번호/배송지/지시시각)
 const ORDER_META: Record<string, { orderNo: string; destination: string; requestedAt: string; status: OutboundStatus }> = {
   현대트랜시스: { orderNo: "OUT-20260713-01", destination: "아산 1공장", requestedAt: "2026-07-13T08:10:00.000Z", status: "배송중" },
-  서연이화: { orderNo: "OUT-20260713-02", destination: "천안 공장", requestedAt: "2026-07-13T08:20:00.000Z", status: "진행" },
   동희오토: { orderNo: "OUT-20260713-03", destination: "서산 공장", requestedAt: "2026-07-13T08:30:00.000Z", status: "출고예정" },
   HL만도: { orderNo: "OUT-20260713-04", destination: "평택 공장", requestedAt: "2026-07-13T08:40:00.000Z", status: "배송중" },
   현대모비스: { orderNo: "OUT-20260713-05", destination: "진천 공장", requestedAt: "2026-07-13T08:50:00.000Z", status: "완료" },
+  유라코퍼레이션: { orderNo: "OUT-20260713-02", destination: "유라 경주공장", requestedAt: "2026-07-13T09:05:00.000Z", status: "진행" },
 };
 
 function toLine(l: LabelRecord): OutboundLine {

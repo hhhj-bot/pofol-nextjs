@@ -94,7 +94,7 @@ function InboundProgram() {
   const rows = [
     { code: "M1 · GTL-MSTR-0001", note: "입고예정 마스터 · 아산" },
     { code: "S1 · 현대트랜시스", note: "싱글 검수" },
-    { code: "S2 · 서연이화", note: "싱글 검수" },
+    { code: "S2 · 유라코퍼레이션", note: "싱글 검수" },
     { code: "S3 · 동희오토", note: "싱글 검수" },
   ];
   return (

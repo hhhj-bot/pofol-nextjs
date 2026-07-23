@@ -43,7 +43,7 @@ export const LABELS: LabelRecord[] = [
     destination: "아산",
   },
   { labelCode: "GTL-SGL-0001", labelType: "SINGLE", masterCode: "GTL-MSTR-0001", sku: "FIN-3001", partName: "완제품 도어트림", lotNo: "LOT-20260630-01", qty: 15, packedAt: "2026-06-30T09:15:00.000Z", destination: "아산", customer: "현대트랜시스", location: "R1-1-1", weightKg: 12 },
-  { labelCode: "GTL-SGL-0002", labelType: "SINGLE", masterCode: "GTL-MSTR-0001", sku: "FIN-3001", partName: "완제품 도어트림", lotNo: "LOT-20260630-01", qty: 15, packedAt: "2026-06-30T09:16:00.000Z", destination: "아산", customer: "서연이화", location: "R1-1-2", weightKg: 12 },
+  { labelCode: "GTL-SGL-0002", labelType: "SINGLE", masterCode: "GTL-MSTR-0001", sku: "FIN-3001", partName: "완제품 도어트림", lotNo: "LOT-20260630-01", qty: 15, packedAt: "2026-06-30T09:16:00.000Z", destination: "아산", customer: "유라코퍼레이션", location: "R1-1-2", weightKg: 12 },
   { labelCode: "GTL-SGL-0003", labelType: "SINGLE", masterCode: "GTL-MSTR-0001", sku: "FIN-3001", partName: "완제품 도어트림", lotNo: "LOT-20260630-01", qty: 15, packedAt: "2026-06-30T09:17:00.000Z", destination: "아산", customer: "동희오토", location: "R1-1-3", weightKg: 12 },
 
   // ── 마스터 0002 (성형품 A) = 싱글 2개 묶음 → 이천 허브 ──
@@ -76,8 +76,8 @@ export const LABELS: LabelRecord[] = [
     destination: "아산",
   },
   { labelCode: "GTL-SGL-0006", labelType: "SINGLE", masterCode: "GTL-MSTR-0003", sku: "FIN-3002", partName: "완제품 콘솔", lotNo: "LOT-20260702-03", qty: 11, packedAt: "2026-07-02T10:00:00.000Z", destination: "아산", customer: "현대트랜시스", location: "R1-2-1", weightKg: 15 },
-  { labelCode: "GTL-SGL-0007", labelType: "SINGLE", masterCode: "GTL-MSTR-0003", sku: "FIN-3002", partName: "완제품 콘솔", lotNo: "LOT-20260702-03", qty: 10, packedAt: "2026-07-02T10:01:00.000Z", destination: "아산", customer: "서연이화", location: "R1-2-2", weightKg: 15 },
-  { labelCode: "GTL-SGL-0008", labelType: "SINGLE", masterCode: "GTL-MSTR-0003", sku: "FIN-3002", partName: "완제품 콘솔", lotNo: "LOT-20260702-03", qty: 10, packedAt: "2026-07-02T10:02:00.000Z", destination: "아산", customer: "HL만도", location: "R1-2-3", weightKg: 15 },
+  { labelCode: "GTL-SGL-0007", labelType: "SINGLE", masterCode: "GTL-MSTR-0003", sku: "FIN-3002", partName: "완제품 콘솔", lotNo: "LOT-20260702-03", qty: 10, packedAt: "2026-07-02T10:01:00.000Z", destination: "아산", customer: "유라코퍼레이션", location: "R1-2-2", weightKg: 15 },
+  { labelCode: "GTL-SGL-0008", labelType: "SINGLE", masterCode: "GTL-MSTR-0003", sku: "FIN-3002", partName: "완제품 콘솔", lotNo: "LOT-20260702-03", qty: 10, packedAt: "2026-07-02T10:02:00.000Z", destination: "아산", customer: "유라코퍼레이션", location: "R1-2-3", weightKg: 15 },
 
   // ── 마스터 0004 (범퍼 브라켓) = 싱글 3개 묶음 → 청주 허브 ──
   {
@@ -86,8 +86,8 @@ export const LABELS: LabelRecord[] = [
     sku: "WIP-2011",
     partName: "범퍼 브라켓",
     lotNo: "LOT-20260703-04",
-    qty: 54,
-    boxCount: 3,
+    qty: 70,
+    boxCount: 4,
     palletNo: "PLT-8804",
     packedAt: "2026-07-03T09:30:00.000Z",
     destination: "청주",
@@ -95,6 +95,7 @@ export const LABELS: LabelRecord[] = [
   { labelCode: "GTL-SGL-0009", labelType: "SINGLE", masterCode: "GTL-MSTR-0004", sku: "WIP-2011", partName: "범퍼 브라켓", lotNo: "LOT-20260703-04", qty: 20, packedAt: "2026-07-03T09:25:00.000Z", destination: "청주", customer: "동희오토", location: "A2-1-2", weightKg: 6.4 },
   { labelCode: "GTL-SGL-0010", labelType: "SINGLE", masterCode: "GTL-MSTR-0004", sku: "WIP-2011", partName: "범퍼 브라켓", lotNo: "LOT-20260703-04", qty: 18, packedAt: "2026-07-03T09:26:00.000Z", destination: "청주", customer: "현대모비스", location: "A2-1-3", weightKg: 6.4 },
   { labelCode: "GTL-SGL-0011", labelType: "SINGLE", masterCode: "GTL-MSTR-0004", sku: "WIP-2011", partName: "범퍼 브라켓", lotNo: "LOT-20260703-04", qty: 16, packedAt: "2026-07-03T09:27:00.000Z", destination: "청주", customer: "현대트랜시스", location: "A2-1-4", weightKg: 6.4 },
+  { labelCode: "GTL-SGL-0012", labelType: "SINGLE", masterCode: "GTL-MSTR-0004", sku: "WIP-2011", partName: "범퍼 브라켓", lotNo: "LOT-20260703-04", qty: 16, packedAt: "2026-07-03T09:28:00.000Z", destination: "청주", customer: "유라코퍼레이션", location: "A2-1-5", weightKg: 6.4 },
 ];
 
 // 라벨 코드 단건 조회 — PDA가 바코드를 스캔한 상황을 흉내낸다.

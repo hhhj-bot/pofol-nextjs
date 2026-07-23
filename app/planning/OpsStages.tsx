@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { LOCS, settleAll, type Loc } from "../threejs/LoadPreview";
+import { LOCS, settleAll, levelLoadOf, loadColor, ALLOWABLE, type Loc } from "../threejs/LoadPreview";
+import { SorterHMI } from "./SorterHMI";
 
 // 입출고 · 생산 섹션 — 제조물류의 실제 진행 순서대로 구현한다.
 //   입고 → 생산(설비연동) → 출고
@@ -15,7 +16,6 @@ const Loading = () => (
 );
 
 const InboundScan3D = dynamic(() => import("../threejs/InboundScan3D").then((m) => m.InboundScan3D), { ssr: false, loading: Loading });
-const Conveyor3D = dynamic(() => import("../threejs/Conveyor3D").then((m) => m.Conveyor3D), { ssr: false, loading: Loading });
 const Warehouse3D = dynamic(() => import("../threejs/Warehouse3D").then((m) => m.Warehouse3D), { ssr: false, loading: Loading });
 
 type Receipt = { receiptNo: string; invoiceNo: string; supplier: string; dock: string; status: string; totalQty: number; totalWeightKg: number };
@@ -28,11 +28,13 @@ const RSTATUS: Record<string, string> = {
   입고완료: "bg-green-100 text-green-700",
 };
 
-type StageKey = "in" | "prod" | "out";
+type StageKey = "in" | "prod" | "store" | "out" | "ship";
 const STAGES: { key: StageKey; n: number; title: string; desc: string }[] = [
-  { key: "in", n: 1, title: "입고", desc: "업무번호·Invoice 기준 입고건 접수 → 도크 접안 → PDA 검수(마스터/싱글 스캔) → 적치" },
-  { key: "prod", n: 2, title: "생산 (설비연동)", desc: "자재 투입 후 생산 → 컨베이어 이송 → RFID 게이트 인식 → 목적지별 자동 분기(PLC 디버터)" },
-  { key: "out", n: 3, title: "출고", desc: "고객사 주문 단위로 싱글 배열 → 피킹 → 스캔 확인완료 → 출고가능 → 상차·배송" },
+  { key: "in", n: 1, title: "입고", desc: "업무번호·Invoice 기준 입고건 접수 → 도크 접안 → PDA 검수(마스터/싱글 스캔)" },
+  { key: "prod", n: 2, title: "생산 (설비연동)", desc: "제조·창고에서 인입된 화물이 컨베이어 메인 라인을 타고 이동 → 스캔 게이트(RFID/바코드) 인식 → 목적지 슈트로 분기 → 도크에서 차량 상차" },
+  { key: "store", n: 3, title: "보관", desc: "검수된 화물을 랙 로케이션에 적치 → 단(레벨)별 하중과 적재율을 확인하며 보관" },
+  { key: "out", n: 4, title: "출고", desc: "고객사 주문 단위로 싱글 배열 → 피킹 → 스캔 확인완료 → 출고가능" },
+  { key: "ship", n: 5, title: "배송", desc: "배차된 차량에 상차 → 운행 → 도착. 차량별 적재율과 ETA로 배송 현황을 관제" },
 ];
 
 // ── 입고 프로그램 화면 ──
@@ -184,6 +186,132 @@ function OutboundProgram() {
   );
 }
 
+// ── 보관 프로그램 화면 ──
+function StorageProgram({ locs }: { locs: Loc[] }) {
+  const filled = locs.filter((l) => l.sku).length;
+  const rate = Math.round((filled / locs.length) * 100);
+  const totalKg = locs.reduce((s, l) => s + (l.weight ?? 0), 0);
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+        <span className="text-sm font-semibold text-slate-900">랙 보관 현황</span>
+        <span className="text-[11px] text-slate-400">적재율 {rate}% · {totalKg.toLocaleString()}kg</span>
+      </div>
+      <ul className="space-y-1.5 px-3 py-2">
+        {[3, 2, 1].map((level) => {
+          const lv = levelLoadOf(locs, level);
+          const ratio = lv / ALLOWABLE;
+          const over = lv > ALLOWABLE;
+          return (
+            <li key={level} className="flex items-center gap-2">
+              <span className={"w-8 text-xs font-bold " + (over ? "text-red-600" : "text-slate-500")}>L{level}</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full" style={{ width: Math.min(100, ratio * 100) + "%", background: loadColor(ratio) }} />
+              </div>
+              <span className={"w-24 text-right text-xs " + (over ? "font-bold text-red-600" : "text-slate-500")}>
+                {lv.toLocaleString()}kg{over ? " 초과" : ""}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="thin-scroll max-h-[240px] overflow-auto border-t border-slate-100 p-2">
+        <table className="w-full min-w-[420px] whitespace-nowrap text-xs">
+          <thead>
+            <tr className="text-left text-slate-400">
+              <th className="pb-1 pr-4 font-medium">로케이션</th>
+              <th className="pb-1 pr-4 font-medium">SKU</th>
+              <th className="pb-1 pr-4 text-right font-medium">수량</th>
+              <th className="pb-1 pr-4 text-right font-medium">중량</th>
+            </tr>
+          </thead>
+          <tbody className="text-slate-600">
+            {locs.filter((l) => l.sku).map((l) => (
+              <tr key={l.code} className="border-t border-slate-100">
+                <td className="py-1.5 pr-4 font-mono text-[11px]">{l.code}</td>
+                <td className="py-1.5 pr-4">{l.sku}</td>
+                <td className="py-1.5 pr-4 text-right">{l.qty}</td>
+                <td className="py-1.5 pr-4 text-right text-slate-400">{l.weight}kg</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-400">
+        허용하중 {ALLOWABLE.toLocaleString()}kg/단 · 초과 시 해당 단이 빨갛게 표시됩니다
+      </div>
+    </div>
+  );
+}
+
+// ── 배송 프로그램 화면 ──
+type Veh = { plateNo: string; driver: string; status: string; destination: string; orderNo?: string; loadKg: number; capacityKg: number; eta?: string };
+const VSTATUS: Record<string, string> = {
+  운행중: "bg-blue-100 text-blue-700",
+  상차중: "bg-amber-100 text-amber-700",
+  대기: "bg-slate-100 text-slate-500",
+  도착: "bg-green-100 text-green-700",
+};
+
+function ShippingProgram() {
+  const [rows, setRows] = useState<Veh[]>([]);
+  useEffect(() => {
+    fetch("/api/vehicles")
+      .then((r) => r.json())
+      .then((d) => setRows(d.vehicles ?? []))
+      .catch(() => setRows([]));
+  }, []);
+  const running = rows.filter((v) => v.status === "운행중").length;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+        <span className="text-sm font-semibold text-slate-900">배송 · 차량 관제</span>
+        <span className="text-[11px] text-slate-400">운행 {running} / {rows.length}대</span>
+      </div>
+      <div className="thin-scroll max-h-[380px] overflow-auto p-2">
+        <table className="w-full min-w-[560px] whitespace-nowrap text-xs">
+          <thead>
+            <tr className="text-left text-slate-400">
+              <th className="pb-1 pr-4 font-medium">차량번호</th>
+              <th className="pb-1 pr-4 font-medium">기사</th>
+              <th className="pb-1 pr-4 font-medium">상태</th>
+              <th className="pb-1 pr-4 font-medium">목적지</th>
+              <th className="pb-1 pr-4 font-medium">적재율</th>
+              <th className="pb-1 pr-4 font-medium">ETA</th>
+            </tr>
+          </thead>
+          <tbody className="text-slate-600">
+            {rows.map((v) => {
+              const rate = v.capacityKg ? v.loadKg / v.capacityKg : 0;
+              return (
+                <tr key={v.plateNo} className="border-t border-slate-100">
+                  <td className="py-1.5 pr-4 font-mono text-[11px] font-semibold text-slate-800">{v.plateNo}</td>
+                  <td className="py-1.5 pr-4">{v.driver}</td>
+                  <td className="py-1.5 pr-4">
+                    <span className={"rounded-full px-1.5 py-0.5 text-[10px] font-semibold " + (VSTATUS[v.status] ?? "bg-slate-100")}>{v.status}</span>
+                  </td>
+                  <td className="py-1.5 pr-4 text-slate-500">{v.destination}</td>
+                  <td className="py-1.5 pr-4">
+                    <div className="flex items-center gap-1">
+                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
+                        <div className={"h-full rounded-full " + (rate > 0.9 ? "bg-red-500" : "bg-brand-500")} style={{ width: Math.round(rate * 100) + "%" }} />
+                      </div>
+                      <span className="text-[10px] text-slate-400">{Math.round(rate * 100)}%</span>
+                    </div>
+                  </td>
+                  <td className="py-1.5 pr-4 text-[11px] text-slate-400">
+                    {v.eta ? new Date(v.eta).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "-"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export function OpsStages() {
   const [stage, setStage] = useState<StageKey>("in");
   const [locs] = useState<Loc[]>(() => settleAll(LOCS));
@@ -221,20 +349,28 @@ export function OpsStages() {
         {s.desc}
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="min-w-0">
-          <div className="mb-1.5 text-xs font-semibold text-slate-500">프로그램 화면</div>
-          {stage === "in" && <InboundProgram />}
-          {stage === "prod" && <ProductionProgram />}
-          {stage === "out" && <OutboundProgram />}
+      {stage === "prod" ? (
+        <div className="mt-4">
+          <SorterHMI />
         </div>
-        <div className="min-w-0">
-          <div className="mb-1.5 text-xs font-semibold text-slate-500">3D 화면</div>
-          {stage === "in" && <InboundScan3D />}
-          {stage === "prod" && <Conveyor3D />}
-          {stage === "out" && <Warehouse3D locs={locs} />}
+      ) : stage === "ship" ? (
+        <div className="mt-4">
+          <ShippingProgram />
         </div>
-      </div>
+      ) : (
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="min-w-0">
+            <div className="mb-1.5 text-xs font-semibold text-slate-500">프로그램 화면</div>
+            {stage === "in" && <InboundProgram />}
+            {stage === "store" && <StorageProgram locs={locs} />}
+            {stage === "out" && <OutboundProgram />}
+          </div>
+          <div className="min-w-0">
+            <div className="mb-1.5 text-xs font-semibold text-slate-500">3D 화면</div>
+            {stage === "in" ? <InboundScan3D /> : <Warehouse3D locs={locs} />}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ import * as THREE from "three";
 const MASTER = { code: "M1", full: "GTL-MSTR-0001", dest: "아산 허브", boxes: 3 };
 const SGL = [
   { key: "S1", x: -0.75, customer: "현대트랜시스" },
-  { key: "S2", x: 0, customer: "서연이화" },
+  { key: "S2", x: 0, customer: "유라코퍼레이션" },
   { key: "S3", x: 0.75, customer: "동희오토" },
 ];
 

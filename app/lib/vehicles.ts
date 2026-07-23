@@ -20,7 +20,7 @@ export const VEHICLES: Vehicle[] = [
   { plateNo: "56다 1234", driver: "이배송", status: "대기", destination: "서산 공장", orderNo: "OUT-20260713-03", loadKg: 0, capacityKg: 3500 },
   { plateNo: "78라 5678", driver: "최물류", status: "운행중", destination: "평택 공장", orderNo: "OUT-20260713-04", loadKg: 2600, capacityKg: 5000, eta: "2026-07-13T10:50:00.000Z" },
   { plateNo: "90마 2345", driver: "정운행", status: "도착", destination: "진천 공장", orderNo: "OUT-20260713-05", loadKg: 1200, capacityKg: 3500 },
-  { plateNo: "11바 6789", driver: "한대기", status: "대기", destination: "-", loadKg: 0, capacityKg: 5000 },
+  { plateNo: "11바 6789", driver: "한대기", status: "상차중", destination: "유라 경주공장", orderNo: "OUT-20260713-02", loadKg: 1400, capacityKg: 5000, eta: "2026-07-13T13:10:00.000Z" },
 ];
 
 export type VehicleList = { serverTime: string; generatedBy: string; vehicles: Vehicle[] };

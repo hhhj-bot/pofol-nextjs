@@ -7,13 +7,13 @@ import { OpsStages } from "./OpsStages";
 
 // 업무구현 탭 — 맨 위에 전체 관제화면, 그 아래를 두 개의 서브탭으로 나눈다.
 //   공장·창고 설계 시뮬레이션 : CAD 도면 · 랙 구획 · 입출고 위치 · 동선
-//   입출고 · 생산            : 입고 → 생산(설비연동) → 출고
+//   입출고 · 생산            : 입고 → 생산 → 보관 → 출고 → 배송
 
 type SubKey = "design" | "ops";
 
 const SUBS: { key: SubKey; label: string; desc: string }[] = [
   { key: "design", label: "공장·창고 설계 시뮬레이션", desc: "CAD 도면 · 랙 구획 · 동선" },
-  { key: "ops", label: "입출고 · 생산", desc: "입고 → 생산(설비연동) → 출고" },
+  { key: "ops", label: "입출고 · 생산", desc: "입고 → 생산 → 보관 → 출고 → 배송" },
 ];
 
 export function ImplTab() {
@@ -61,7 +61,7 @@ export function ImplTab() {
         <div className="mt-5">{sub === "design" ? <FactoryPlan /> : <OpsStages />}</div>
 
         <p className="mt-3 text-xs text-slate-400">
-          설계에서 정의한 구획·로케이션·동선이 입고 → 생산(설비연동) → 출고 전 단계의 입력이 됩니다.
+          설계에서 정의한 구획·로케이션·동선이 입고 → 생산 → 보관 → 출고 → 배송 전 단계의 입력이 됩니다.
         </p>
       </section>
     </div>
